@@ -1,2 +1,2 @@
-# potato
+# potato server ～
 ヽ(⌐■_■)ノ♪
