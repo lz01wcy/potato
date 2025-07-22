@@ -12,7 +12,6 @@ func (n Nice) Start() {
 }
 
 func (n Nice) Update() {
-	println("update")
 }
 
 func (n Nice) OnDestroy() {
