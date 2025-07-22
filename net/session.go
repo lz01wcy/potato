@@ -22,14 +22,12 @@ const (
 
 type Session struct {
 	manager   *Manager
-	server    IListener
 	id        uint64
 	conn      net.Conn
 	connGuard sync.RWMutex
 	exitSync  sync.WaitGroup
 	sendChan  chan []byte
 	state     int64 //正常情况是0 主动关闭是1 出错关闭是2
-	timeout   int32
 }
 
 type SessionEvent struct {
@@ -58,7 +56,6 @@ func (s *Session) Raw() interface{} {
 	return s.Conn()
 }
 
-// 主动断开得到时候发送fin
 func (s *Session) Close() {
 	state := atomic.LoadInt64(&s.state)
 	if state != 0 {
@@ -190,8 +187,8 @@ func (s *Session) readLoop() {
 }
 
 func (s *Session) readMessageBytes() (msg []byte, err error) {
-	if s.timeout != 0 {
-		if err = s.conn.SetReadDeadline(time.Now().Add(time.Duration(s.timeout) * time.Second)); err != nil {
+	if s.manager.timeout != 0 {
+		if err = s.conn.SetReadDeadline(time.Now().Add(time.Duration(s.manager.timeout) * time.Second)); err != nil {
 			return
 		}
 	}
@@ -241,8 +238,8 @@ func (s *Session) writeLoop() {
 }
 
 func (s *Session) sendMessage(msg interface{}) (err error) {
-	if s.timeout != 0 {
-		if err = s.conn.SetWriteDeadline(time.Now().Add(time.Duration(s.timeout) * time.Second)); err != nil {
+	if s.manager.timeout != 0 {
+		if err = s.conn.SetWriteDeadline(time.Now().Add(time.Duration(s.manager.timeout) * time.Second)); err != nil {
 			return
 		}
 	}
@@ -264,10 +261,10 @@ func (s *Session) sendMessage(msg interface{}) (err error) {
 }
 
 func (s *Session) updateDeadline() (err error) {
-	if s.timeout == 0 {
-		err = s.Conn().SetDeadline(time.Now().Add(time.Second * 10))
+	if s.manager.timeout == 0 {
+		err = s.Conn().SetDeadline(time.Now().Add(time.Second * 30))
 	} else {
-		err = s.Conn().SetDeadline(time.Now().Add(time.Second * time.Duration(s.timeout)))
+		err = s.Conn().SetDeadline(time.Now().Add(time.Second * time.Duration(s.manager.timeout)))
 	}
 	if err != nil {
 		log.Logger.Error("session flush deadline err")

@@ -15,6 +15,10 @@ func NewListener(network, addr string) (IListener, error) {
 	switch network {
 	case "tcp":
 		return newTcpListener(addr)
+	case "kcp":
+		return newKcpListener(addr)
+	case "ws":
+		return newWsListener(addr)
 	}
 	return nil, errors.New("not support network")
 }

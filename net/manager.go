@@ -10,12 +10,15 @@ import (
 type ManagerConfig struct {
 	SessionStartId uint64
 	ConnectLimit   int32
+	Timeout        int32
 	Codec          ICodec
 }
 
 func defaultManagerConfig() *ManagerConfig {
 	return &ManagerConfig{
-		Codec: &JsonCodec{},
+		ConnectLimit: 50000,
+		Timeout:      30,
+		Codec:        &JsonCodec{},
 	}
 }
 
@@ -26,7 +29,6 @@ func ManagerConfigure(options ...ManagerConfigOption) *ManagerConfig {
 	for _, option := range options {
 		option(config)
 	}
-
 	return config
 }
 
@@ -42,6 +44,12 @@ func WithConnectLimit(limit int32) ManagerConfigOption {
 	}
 }
 
+func WithTimeout(timeout int32) ManagerConfigOption {
+	return func(config *ManagerConfig) {
+		config.Timeout = timeout
+	}
+}
+
 type Manager struct {
 	idGen            uint64
 	sessionMap       sync.Map
@@ -49,6 +57,7 @@ type Manager struct {
 	listeners        []IListener
 	codec            ICodec
 	connectLimit     int32
+	timeout          int32
 	sessionEventChan chan *SessionEvent
 }
 
@@ -66,6 +75,7 @@ func NewManagerWithConfig(config *ManagerConfig) *Manager {
 	m.idGen = config.SessionStartId
 	m.codec = config.Codec
 	m.connectLimit = config.ConnectLimit
+	m.timeout = config.Timeout
 	return m
 }
 
@@ -81,16 +91,16 @@ func (sm *Manager) OnNewConnection(conn net.Conn) {
 	sess.Start()
 }
 
-func (sm *Manager) AddListener(server IListener) {
-	server.OnNewConnection(sm.OnNewConnection)
-	sm.listeners = append(sm.listeners, server)
+func (sm *Manager) AddListener(ln IListener) {
+	ln.OnNewConnection(sm.OnNewConnection)
+	sm.listeners = append(sm.listeners, ln)
 }
 
 func (sm *Manager) NewSession(conn net.Conn) *Session {
-	sm.idGen++
+	atomic.AddUint64(&sm.idGen, 1)
 	s := &Session{
 		manager:   sm,
-		id:        sm.idGen,
+		id:        atomic.LoadUint64(&sm.idGen),
 		conn:      conn,
 		connGuard: sync.RWMutex{},
 		exitSync:  sync.WaitGroup{},
