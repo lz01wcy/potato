@@ -200,7 +200,7 @@ func (s *Session) readMessageBytes() (msg []byte, err error) {
 		return nil, errors.New("reader cast error")
 	}
 
-	msg, err = ReadLVPacket(reader)
+	msg, err = ReadPacket(reader)
 
 	if err != nil {
 		return
@@ -251,9 +251,9 @@ func (s *Session) sendMessage(msg interface{}) (err error) {
 		return nil
 	}
 
-	pkg, err := PackPacket(s.manager.codec, msg)
+	pkg, err := s.manager.codec.Encode(msg)
 
-	err = WriteLVPacket(writer, pkg)
+	err = WritePacket(writer, pkg)
 	if err != nil {
 		return
 	}

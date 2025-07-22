@@ -31,7 +31,6 @@ func newKcpListener(addr string) (*kcpListener, error) {
 
 func (s *kcpListener) Start() {
 	go s.accept()
-	log.Sugar.Infof("kcp listener start: %+v", s.addr)
 }
 
 func (s *kcpListener) Stop() {
@@ -69,7 +68,13 @@ func (s *kcpListener) accept() {
 				_ = conn.Close()
 				continue
 			}
-			go s.onNewConnection(conn)
+
+			kcpConn := conn.(*kcp.UDPSession)
+			//kcpConn.SetNoDelay(0, 40, 0, 0) // normal mode
+			kcpConn.SetNoDelay(1, 10, 2, 1) // turbo mode
+			kcpConn.SetStreamMode(true)
+
+			go s.onNewConnection(kcpConn)
 		}
 	}
 }

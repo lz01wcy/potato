@@ -30,7 +30,6 @@ func newTcpListener(addr string) (*tcpListener, error) {
 
 func (s *tcpListener) Start() {
 	go s.accept()
-	log.Sugar.Infof("tcp listener start: %+v", s.addr)
 }
 
 func (s *tcpListener) Stop() {

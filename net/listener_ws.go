@@ -44,7 +44,6 @@ func (s *wsListener) Start() {
 			log.Sugar.Errorf("ws serve error:%v", err)
 		}
 	}()
-	log.Sugar.Infof("ws listener start: %+v", s.addr)
 }
 
 func (s *wsListener) Stop() {

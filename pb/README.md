@@ -1,0 +1,52 @@
+## pb消息自动注册插件
+
+既然已经到了这里， 相信你已经学会了使用protobuf。
+这个插件的作用很简单， 就是自动把客户端和服务器之间通信用到的消息注册到对应的消息ID上。
+在codec中，通过id和消息类型的对应关系，可以很方便地进行消息的解析和编码。
+
+### 使用方法
+
+0. 首先，此插件依赖原版protoc。如果对pb在golang中的使用不熟悉，可以先学习一下protoc的使用方法。
+
+1. 安装插件 用于在编译proto文件的时候自动生成注册文件
+```bash
+go install github.com/murang/potato/pb/protoc-gen-autoregister@latest
+```
+
+2. 编写proto文件
+```proto
+syntax = "proto3";
+package your_pack;
+option go_package = "/your_pack";
+
+// 消息ID严格按照 c2s(客户端->服务器)/s2c(服务器->客户端)的前缀与消息名称通过下划线连接的方式命名
+// 比如 c2s_Heartbeat 表示客户端->服务器的心跳消息
+// 一条消息必然有对应的ID 所以必须在消息ID枚举中定义了消息 才能被自动注册
+// 由于proto中名称不能重复 所以消息ID前缀小写 对应的消息名称前缀大写
+// 具体格式参考如下消息
+
+enum MsgId {
+  c2s_Heartbeat = 0; // proto3默认枚举从0开始
+  s2c_Heartbeat = 1; // 心跳
+}
+
+message C2S_Heartbeat {
+}
+message S2C_Heartbeat {
+  int64 timestamp = 1; // 当前服务器时间戳
+}
+```
+
+3. 编译proto文件 在proto文件所在的目录下（或者其他目录，请自行调整命令参数）
+```bash
+protoc --go_out=. --autoregister_out=. *.proto
+```
+4. 检查生成的注册文件 `your_prroto_autoregister.go`
+```bash
+current_dir
+├── your_prroto.proto
+└── your_pack
+    ├── your_prroto.pb.go
+    └── your_prroto_autoregister.go
+```
+如果是有编译错误，请检查是否按照上述格式编写proto文件，检查是否缺少ID对应消息体。

@@ -18,7 +18,7 @@ func main() {
 
 	// net
 	netManager := net.NewManager()
-	ln, err := net.NewListener("ws", "0.0.0.0:10086")
+	ln, err := net.NewListener("tcp", ":10086")
 	if err != nil {
 		panic(err)
 	}
