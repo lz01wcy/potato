@@ -99,12 +99,13 @@ func (sm *Manager) AddListener(ln IListener) {
 func (sm *Manager) NewSession(conn net.Conn) *Session {
 	atomic.AddUint64(&sm.idGen, 1)
 	s := &Session{
-		manager:   sm,
-		id:        atomic.LoadUint64(&sm.idGen),
-		conn:      conn,
-		connGuard: sync.RWMutex{},
-		exitSync:  sync.WaitGroup{},
-		sendChan:  make(chan []byte, 32),
+		manager:     sm,
+		id:          atomic.LoadUint64(&sm.idGen),
+		conn:        conn,
+		connGuard:   sync.RWMutex{},
+		exitSync:    sync.WaitGroup{},
+		sendChan:    make(chan any, 32),
+		sendRawChan: make(chan []byte, 32),
 	}
 	return s
 }
@@ -128,6 +129,8 @@ func (sm *Manager) Start() {
 					log.Sugar.Infof("session close: %d", ses.Session.ID())
 				case SessionMsg:
 					log.Sugar.Infof("session msg: %v", ses.Msg)
+					data, _ := sm.codec.Encode(ses.Msg)
+					ses.Session.SendRaw(data) //todo
 				}
 			}
 		}

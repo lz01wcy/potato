@@ -21,13 +21,14 @@ const (
 )
 
 type Session struct {
-	manager   *Manager
-	id        uint64
-	conn      net.Conn
-	connGuard sync.RWMutex
-	exitSync  sync.WaitGroup
-	sendChan  chan []byte
-	state     int64 //正常情况是0 主动关闭是1 出错关闭是2
+	manager     *Manager
+	id          uint64
+	conn        net.Conn
+	connGuard   sync.RWMutex
+	exitSync    sync.WaitGroup
+	sendChan    chan any
+	sendRawChan chan []byte
+	state       int64 //正常情况是0 主动关闭是1 出错关闭是2
 }
 
 type SessionEvent struct {
@@ -71,44 +72,25 @@ func (s *Session) Close() {
 }
 
 func (s *Session) Send(msg interface{}) {
-
-	// 只能通过Close关闭连接
 	if msg == nil {
 		return
 	}
-
 	// 已经关闭，不再发送
 	if s.IsClosed() {
 		return
 	}
-
-	data, err := s.manager.codec.Encode(msg)
-	if err != nil {
-		log.Sugar.Errorf("session encode err, sesid: %d, err: %s", s.ID(), err)
-		return
-	}
-
-	s.sendChan <- data
+	s.sendChan <- msg
 }
 
-func (s *Session) SendRaw(data []byte) (err error) {
-	pkt := make([]byte, lenSize+len(data))
-
-	// Length
-	binary.LittleEndian.PutUint32(pkt, uint32(len(data)))
-
-	// Value
-	copy(pkt[lenSize:], data)
-
-	writer, ok := s.Raw().(io.Writer)
-	if !ok || writer == nil {
-		return nil
-	}
-	if _, err = writer.Write(pkt); err != nil {
+func (s *Session) SendRaw(data []byte) {
+	if data == nil {
 		return
 	}
-	err = s.updateDeadline()
-	return
+	// 已经关闭，不再发送
+	if s.IsClosed() {
+		return
+	}
+	s.sendRawChan <- data
 }
 
 func (s *Session) IsClosed() bool {
@@ -212,14 +194,23 @@ func (s *Session) readMessageBytes() (msg []byte, err error) {
 // 发送循环
 func (s *Session) writeLoop() {
 	for !s.IsClosed() {
-		msg, ok := <-s.sendChan
-		if !ok {
-			break
+		var msgBytes []byte
+		select {
+		case raw := <-s.sendRawChan:
+			msgBytes = raw
+		case msg := <-s.sendChan:
+			if msg == nil { //在读loop的时候出错 这边需要break关闭
+				break
+			}
+			data, err := s.manager.codec.Encode(msg)
+			if err != nil {
+				log.Sugar.Errorf("encode msg error, sesid: %d, err: %s", s.ID(), err)
+				break
+			}
+			msgBytes = data
 		}
-		if msg == nil { //在读loop的时候出错 这边需要break关闭
-			break
-		}
-		if err := s.sendMessage(msg); err != nil {
+
+		if err := s.sendMessageBytes(msgBytes); err != nil {
 			if atomic.LoadInt64(&s.state) != 1 || (err.Error() != io.ErrClosedPipe.Error() && !strings.Contains(err.Error(), "use of closed network connection")) {
 				log.Sugar.Warnf("session sendLoop sendMessage err: sesid: %d, err: %s", s.ID(), err.Error())
 			}
@@ -237,12 +228,20 @@ func (s *Session) writeLoop() {
 	s.exitSync.Done()
 }
 
-func (s *Session) sendMessage(msg interface{}) (err error) {
+func (s *Session) sendMessageBytes(msg []byte) (err error) {
 	if s.manager.timeout != 0 {
 		if err = s.conn.SetWriteDeadline(time.Now().Add(time.Duration(s.manager.timeout) * time.Second)); err != nil {
 			return
 		}
 	}
+
+	pkt := make([]byte, lenSize+len(msg))
+
+	// Length
+	binary.BigEndian.PutUint32(pkt, uint32(len(msg)))
+
+	// Value
+	copy(pkt[lenSize:], msg)
 
 	writer, ok := s.Raw().(io.Writer)
 
@@ -251,9 +250,7 @@ func (s *Session) sendMessage(msg interface{}) (err error) {
 		return nil
 	}
 
-	pkg, err := s.manager.codec.Encode(msg)
-
-	err = WritePacket(writer, pkg)
+	err = WritePacket(writer, msg)
 	if err != nil {
 		return
 	}

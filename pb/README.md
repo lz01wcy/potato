@@ -26,8 +26,9 @@ option go_package = "/your_pack";
 // 具体格式参考如下消息
 
 enum MsgId {
-  c2s_Heartbeat = 0; // proto3默认枚举从0开始
-  s2c_Heartbeat = 1; // 心跳
+  none = 0; // proto3默认枚举从0开始 保留此项用于占位 它不会被自动注册
+  c2s_Heartbeat = 1; // 心跳 客户端 -> 服务器
+  s2c_Heartbeat = 2; // 心跳 服务器 -> 客户端
 }
 
 message C2S_Heartbeat {

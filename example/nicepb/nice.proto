@@ -1,0 +1,15 @@
+syntax = "proto3";
+package nice; // 指定proto文件所属的包
+option go_package = "/nice";
+
+enum MsgId {
+  none = 0; // proto3默认枚举从0开始 保留此项用于占位 它不会被自动注册
+  c2s_Heartbeat = 1; // 心跳 客户端 -> 服务器
+  s2c_Heartbeat = 2; // 心跳 服务器 -> 客户端
+}
+
+message C2S_Heartbeat {
+}
+message S2C_Heartbeat {
+  int64 timestamp = 1; // 当前服务器时间戳
+}
