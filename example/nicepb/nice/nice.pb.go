@@ -23,22 +23,22 @@ const (
 type MsgId int32
 
 const (
-	MsgId_none          MsgId = 0 // proto3默认枚举从0开始 保留此项用于占位 它不会被自动注册
-	MsgId_c2s_Heartbeat MsgId = 1 // 心跳 客户端 -> 服务器
-	MsgId_s2c_Heartbeat MsgId = 2 // 心跳 服务器 -> 客户端
+	MsgId_none      MsgId = 0
+	MsgId_c2s_Hello MsgId = 1
+	MsgId_s2c_Hello MsgId = 2
 )
 
 // Enum value maps for MsgId.
 var (
 	MsgId_name = map[int32]string{
 		0: "none",
-		1: "c2s_Heartbeat",
-		2: "s2c_Heartbeat",
+		1: "c2s_Hello",
+		2: "s2c_Hello",
 	}
 	MsgId_value = map[string]int32{
-		"none":          0,
-		"c2s_Heartbeat": 1,
-		"s2c_Heartbeat": 2,
+		"none":      0,
+		"c2s_Hello": 1,
+		"s2c_Hello": 2,
 	}
 )
 
@@ -69,14 +69,16 @@ func (MsgId) EnumDescriptor() ([]byte, []int) {
 	return file_nice_proto_rawDescGZIP(), []int{0}
 }
 
-type C2S_Heartbeat struct {
+type C2S_Hello struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
+
+	SaySomething string `protobuf:"bytes,1,opt,name=saySomething,proto3" json:"saySomething,omitempty"`
 }
 
-func (x *C2S_Heartbeat) Reset() {
-	*x = C2S_Heartbeat{}
+func (x *C2S_Hello) Reset() {
+	*x = C2S_Hello{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_nice_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -84,13 +86,13 @@ func (x *C2S_Heartbeat) Reset() {
 	}
 }
 
-func (x *C2S_Heartbeat) String() string {
+func (x *C2S_Hello) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*C2S_Heartbeat) ProtoMessage() {}
+func (*C2S_Hello) ProtoMessage() {}
 
-func (x *C2S_Heartbeat) ProtoReflect() protoreflect.Message {
+func (x *C2S_Hello) ProtoReflect() protoreflect.Message {
 	mi := &file_nice_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -102,21 +104,28 @@ func (x *C2S_Heartbeat) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use C2S_Heartbeat.ProtoReflect.Descriptor instead.
-func (*C2S_Heartbeat) Descriptor() ([]byte, []int) {
+// Deprecated: Use C2S_Hello.ProtoReflect.Descriptor instead.
+func (*C2S_Hello) Descriptor() ([]byte, []int) {
 	return file_nice_proto_rawDescGZIP(), []int{0}
 }
 
-type S2C_Heartbeat struct {
+func (x *C2S_Hello) GetSaySomething() string {
+	if x != nil {
+		return x.SaySomething
+	}
+	return ""
+}
+
+type S2C_Hello struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Timestamp int64 `protobuf:"varint,1,opt,name=timestamp,proto3" json:"timestamp,omitempty"` // 当前服务器时间戳
+	Answer string `protobuf:"bytes,1,opt,name=answer,proto3" json:"answer,omitempty"`
 }
 
-func (x *S2C_Heartbeat) Reset() {
-	*x = S2C_Heartbeat{}
+func (x *S2C_Hello) Reset() {
+	*x = S2C_Hello{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_nice_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -124,13 +133,13 @@ func (x *S2C_Heartbeat) Reset() {
 	}
 }
 
-func (x *S2C_Heartbeat) String() string {
+func (x *S2C_Hello) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*S2C_Heartbeat) ProtoMessage() {}
+func (*S2C_Hello) ProtoMessage() {}
 
-func (x *S2C_Heartbeat) ProtoReflect() protoreflect.Message {
+func (x *S2C_Hello) ProtoReflect() protoreflect.Message {
 	mi := &file_nice_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -142,31 +151,32 @@ func (x *S2C_Heartbeat) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use S2C_Heartbeat.ProtoReflect.Descriptor instead.
-func (*S2C_Heartbeat) Descriptor() ([]byte, []int) {
+// Deprecated: Use S2C_Hello.ProtoReflect.Descriptor instead.
+func (*S2C_Hello) Descriptor() ([]byte, []int) {
 	return file_nice_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *S2C_Heartbeat) GetTimestamp() int64 {
+func (x *S2C_Hello) GetAnswer() string {
 	if x != nil {
-		return x.Timestamp
+		return x.Answer
 	}
-	return 0
+	return ""
 }
 
 var File_nice_proto protoreflect.FileDescriptor
 
 var file_nice_proto_rawDesc = []byte{
 	0x0a, 0x0a, 0x6e, 0x69, 0x63, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x04, 0x6e, 0x69,
-	0x63, 0x65, 0x22, 0x0f, 0x0a, 0x0d, 0x43, 0x32, 0x53, 0x5f, 0x48, 0x65, 0x61, 0x72, 0x74, 0x62,
-	0x65, 0x61, 0x74, 0x22, 0x2d, 0x0a, 0x0d, 0x53, 0x32, 0x43, 0x5f, 0x48, 0x65, 0x61, 0x72, 0x74,
-	0x62, 0x65, 0x61, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d,
-	0x70, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x09, 0x74, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61,
-	0x6d, 0x70, 0x2a, 0x37, 0x0a, 0x05, 0x4d, 0x73, 0x67, 0x49, 0x64, 0x12, 0x08, 0x0a, 0x04, 0x6e,
-	0x6f, 0x6e, 0x65, 0x10, 0x00, 0x12, 0x11, 0x0a, 0x0d, 0x63, 0x32, 0x73, 0x5f, 0x48, 0x65, 0x61,
-	0x72, 0x74, 0x62, 0x65, 0x61, 0x74, 0x10, 0x01, 0x12, 0x11, 0x0a, 0x0d, 0x73, 0x32, 0x63, 0x5f,
-	0x48, 0x65, 0x61, 0x72, 0x74, 0x62, 0x65, 0x61, 0x74, 0x10, 0x02, 0x42, 0x07, 0x5a, 0x05, 0x2f,
-	0x6e, 0x69, 0x63, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x63, 0x65, 0x22, 0x2f, 0x0a, 0x09, 0x43, 0x32, 0x53, 0x5f, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x12,
+	0x22, 0x0a, 0x0c, 0x73, 0x61, 0x79, 0x53, 0x6f, 0x6d, 0x65, 0x74, 0x68, 0x69, 0x6e, 0x67, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x73, 0x61, 0x79, 0x53, 0x6f, 0x6d, 0x65, 0x74, 0x68,
+	0x69, 0x6e, 0x67, 0x22, 0x23, 0x0a, 0x09, 0x53, 0x32, 0x43, 0x5f, 0x48, 0x65, 0x6c, 0x6c, 0x6f,
+	0x12, 0x16, 0x0a, 0x06, 0x61, 0x6e, 0x73, 0x77, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x06, 0x61, 0x6e, 0x73, 0x77, 0x65, 0x72, 0x2a, 0x2f, 0x0a, 0x05, 0x4d, 0x73, 0x67, 0x49,
+	0x64, 0x12, 0x08, 0x0a, 0x04, 0x6e, 0x6f, 0x6e, 0x65, 0x10, 0x00, 0x12, 0x0d, 0x0a, 0x09, 0x63,
+	0x32, 0x73, 0x5f, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x10, 0x01, 0x12, 0x0d, 0x0a, 0x09, 0x73, 0x32,
+	0x63, 0x5f, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x10, 0x02, 0x42, 0x07, 0x5a, 0x05, 0x2f, 0x6e, 0x69,
+	0x63, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -184,9 +194,9 @@ func file_nice_proto_rawDescGZIP() []byte {
 var file_nice_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_nice_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_nice_proto_goTypes = []interface{}{
-	(MsgId)(0),            // 0: nice.MsgId
-	(*C2S_Heartbeat)(nil), // 1: nice.C2S_Heartbeat
-	(*S2C_Heartbeat)(nil), // 2: nice.S2C_Heartbeat
+	(MsgId)(0),        // 0: nice.MsgId
+	(*C2S_Hello)(nil), // 1: nice.C2S_Hello
+	(*S2C_Hello)(nil), // 2: nice.S2C_Hello
 }
 var file_nice_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -203,7 +213,7 @@ func file_nice_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_nice_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*C2S_Heartbeat); i {
+			switch v := v.(*C2S_Hello); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -215,7 +225,7 @@ func file_nice_proto_init() {
 			}
 		}
 		file_nice_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*S2C_Heartbeat); i {
+			switch v := v.(*S2C_Hello); i {
 			case 0:
 				return &v.state
 			case 1:

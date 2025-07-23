@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/murang/potato/app"
+	_ "github.com/murang/potato/example/nicepb/nice"
 	"github.com/murang/potato/net"
 )
 
@@ -17,7 +18,7 @@ func main() {
 	//}()
 
 	// net
-	netManager := net.NewManager()
+	netManager := net.NewManager(net.WithCodec(&net.PbCodec{}))
 	ln, err := net.NewListener("tcp", ":10086")
 	if err != nil {
 		panic(err)

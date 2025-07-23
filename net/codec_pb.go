@@ -21,7 +21,8 @@ type PbCodec struct {
 }
 
 func (c *PbCodec) Encode(v interface{}) (msgBytes []byte, err error) {
-	msgType := reflect.TypeOf(v)
+	msgType := reflect.TypeOf(v).Elem()
+
 	msgId := pb.GetIdByType(msgType)
 	if msgId == 0 {
 		err = ErrorMsgNotRegister
@@ -50,7 +51,7 @@ func (c *PbCodec) Encode(v interface{}) (msgBytes []byte, err error) {
 func (c *PbCodec) Decode(data []byte) (msg interface{}, err error) {
 	// 取出消息id
 	msgId := binary.BigEndian.Uint32(data)
-	msgType := pb.GetTypeById(int32(msgId))
+	msgType := pb.GetTypeById(msgId)
 	if msgType == nil {
 		err = ErrorMsgNotRegister
 		return
