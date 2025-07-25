@@ -19,9 +19,9 @@ type moduleActor struct {
 func (m *moduleActor) Receive(ctx actor.Context) {
 	switch msg := ctx.Message().(type) {
 	case *actor.Started:
-		m.module.Start()
+		m.module.OnStart()
 	case *ModuleUpdate:
-		m.module.Update()
+		m.module.OnUpdate()
 	case *actor.Stopping:
 		m.module.OnDestroy()
 	case *ModuleOnMsg:

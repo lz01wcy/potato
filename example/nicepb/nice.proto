@@ -4,13 +4,13 @@ option go_package = "/nice";
 
 enum MsgId {
   none = 0;
-  c2s_Hello = 1;
-  s2c_Hello = 2;
+  c2s_Hello = 100;
+  s2c_Hello = 101;
 }
 
 message C2S_Hello {
-  string saySomething = 1;
+  string name = 1;
 }
 message S2C_Hello {
-  string answer = 1;
+  string sayHi = 1;
 }

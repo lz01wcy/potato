@@ -59,6 +59,7 @@ type Manager struct {
 	connectLimit     int32
 	timeout          int32
 	sessionEventChan chan *SessionEvent
+	msgHandler       IMsgHandler
 }
 
 func NewManager(options ...ManagerConfigOption) *Manager {
@@ -96,6 +97,10 @@ func (sm *Manager) AddListener(ln IListener) {
 	sm.listeners = append(sm.listeners, ln)
 }
 
+func (sm *Manager) SetMsgHandler(handler IMsgHandler) {
+	sm.msgHandler = handler
+}
+
 func (sm *Manager) NewSession(conn net.Conn) *Session {
 	atomic.AddUint64(&sm.idGen, 1)
 	s := &Session{
@@ -123,14 +128,20 @@ func (sm *Manager) Start() {
 					sm.sessionMap.Store(ses.Session.ID(), ses.Session)
 					atomic.AddInt32(&sm.sessionCount, 1)
 					log.Sugar.Infof("session open: %d", ses.Session.ID())
+					if sm.msgHandler != nil {
+						sm.msgHandler.OnSessionOpen(ses.Session)
+					}
 				case SessionClose:
 					sm.sessionMap.Delete(ses.Session.ID())
 					atomic.AddInt32(&sm.sessionCount, -1)
 					log.Sugar.Infof("session close: %d", ses.Session.ID())
+					if sm.msgHandler != nil {
+						sm.msgHandler.OnSessionClose(ses.Session)
+					}
 				case SessionMsg:
-					log.Sugar.Infof("session msg: %v", ses.Msg)
-					data, _ := sm.codec.Encode(ses.Msg)
-					ses.Session.SendRaw(data) //todo
+					if sm.msgHandler != nil {
+						sm.msgHandler.OnMsg(ses.Session, ses.Msg)
+					}
 				}
 			}
 		}

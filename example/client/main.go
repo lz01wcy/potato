@@ -38,7 +38,7 @@ func main() {
 		default:
 			// 构造消息
 			msg := &nice.C2S_Hello{
-				SaySomething: "Hello, Server!",
+				Name: "Potato",
 			}
 			codec := &pnet.PbCodec{}
 			bytes, err := codec.Encode(msg)
