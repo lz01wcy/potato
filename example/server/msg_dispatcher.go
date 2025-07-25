@@ -23,6 +23,7 @@ func WrapHandler[T proto.Message](handler HandlerFunc[T]) func(agent *Agent, msg
 // 消息分发
 var msgDispatcher = map[nice.MsgId]func(agent *Agent, msg proto.Message){
 	nice.MsgId_c2s_Hello: WrapHandler(Hello),
+	// ...
 }
 
 func Hello(agent *Agent, msg *nice.C2S_Hello) {

@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/murang/potato/app"
-	_ "github.com/murang/potato/example/nicepb/nice"
 	"github.com/murang/potato/net"
 )
 

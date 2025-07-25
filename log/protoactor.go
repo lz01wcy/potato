@@ -1,9 +1,8 @@
-package cluster
+package log
 
 import (
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/lmittmann/tint"
-	"github.com/murang/potato/log"
 	slogzap "github.com/samber/slog-zap/v2"
 	"log/slog"
 	"os"
@@ -33,7 +32,7 @@ func ColoredConsoleLogging(system *actor.ActorSystem) *slog.Logger {
 
 // enable Zap logging
 func ZapAdapterLogging(system *actor.ActorSystem) *slog.Logger {
-	zapLogger := log.Logger
+	zapLogger := Logger
 	logger := slog.New(slogzap.Option{Level: slog.LevelInfo, Logger: zapLogger}.NewZapHandler())
 	return logger.
 		With("system", system.ID)

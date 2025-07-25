@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/asynkron/protoactor-go/actor"
 	"github.com/asynkron/protoactor-go/scheduler"
-	"github.com/murang/potato/cluster"
 	"github.com/murang/potato/log"
 	"os"
 	"os/signal"
@@ -38,11 +37,15 @@ func Instance() *Application {
 
 func NewApplication() *Application {
 	a := &Application{
-		actorSystem: actor.NewActorSystem(actor.WithLoggerFactory(cluster.ColoredConsoleLogging)),
+		actorSystem: actor.NewActorSystem(actor.WithLoggerFactory(log.ColoredConsoleLogging)),
 		id2mod:      map[ModuleID]IModule{},
 		id2pid:      sync.Map{},
 	}
 	return a
+}
+
+func (a *Application) GetActorSystem() *actor.ActorSystem {
+	return a.actorSystem
 }
 
 func (a *Application) RegisterModule(modId ModuleID, mod IModule) {
