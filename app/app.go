@@ -161,6 +161,15 @@ func (a *Application) StartUpdate() {
 }
 
 func (a *Application) End(f func()) {
+	// 网络
+	if a.netManager != nil {
+		a.netManager.OnDestroy()
+	}
+	// rpc
+	if a.rpcManager != nil {
+		a.rpcManager.OnDestroy()
+	}
+
 	for _, cancel := range a.cancels {
 		cancel()
 	}
