@@ -13,18 +13,18 @@ type Agent struct {
 	session *net.Session
 }
 
-type MsgHandler struct {
+type MyMsgHandler struct {
 }
 
-func (m MsgHandler) OnSessionOpen(session *net.Session) {
+func (m MyMsgHandler) OnSessionOpen(session *net.Session) {
 	log.Sugar.Info("handler got open:", session.ID())
 }
 
-func (m MsgHandler) OnSessionClose(session *net.Session) {
+func (m MyMsgHandler) OnSessionClose(session *net.Session) {
 	log.Sugar.Info("handler got close:", session.ID())
 }
 
-func (m MsgHandler) OnMsg(session *net.Session, msg any) {
+func (m MyMsgHandler) OnMsg(session *net.Session, msg any) {
 	log.Sugar.Infof("handler got msg: %v", msg)
 	handler, ok := msgDispatcher[nice.MsgId(pb.GetIdByType(reflect.TypeOf(msg).Elem()))]
 	if !ok {

@@ -1,6 +1,11 @@
 package main
 
-import "github.com/murang/potato/log"
+import (
+	"fmt"
+	"github.com/murang/potato/app"
+	"github.com/murang/potato/example/nicepb/nice"
+	"github.com/murang/potato/log"
+)
 
 type NiceModule struct {
 }
@@ -26,5 +31,11 @@ func (n *NiceModule) OnMsg(msg interface{}) {
 
 func (n *NiceModule) OnRequest(msg interface{}) interface{} {
 	log.Sugar.Infof("request: %v", msg)
-	return "Nice ~ " + msg.(string)
+	grain := nice.GetCalculatorGrainClient(app.Instance().GetCluster(), "NiceIdentity")
+	sum, err := grain.Sum(&nice.Input{A: 6, B: 6})
+	if err != nil {
+		log.Sugar.Errorf("sum error: %v", err)
+		return "sum error: " + err.Error()
+	}
+	return fmt.Sprintf("Nice ~  %s cal sum : %d", msg, sum.Result)
 }

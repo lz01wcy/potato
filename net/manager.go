@@ -7,46 +7,19 @@ import (
 	"sync/atomic"
 )
 
-type ManagerConfig struct {
-	SessionStartId uint64
-	ConnectLimit   int32
-	Timeout        int32
-	Codec          ICodec
+type Config struct {
+	SessionStartId uint64      // 会话起始id
+	ConnectLimit   int32       // 连接限制
+	Timeout        int32       // 超时 单位秒
+	Codec          ICodec      // 消息编解码
+	MsgHandler     IMsgHandler // 消息处理器
 }
 
-func defaultManagerConfig() *ManagerConfig {
-	return &ManagerConfig{
+func defaultConfig() *Config {
+	return &Config{
 		ConnectLimit: 50000,
 		Timeout:      30,
 		Codec:        &JsonCodec{},
-	}
-}
-
-type ManagerConfigOption func(config *ManagerConfig)
-
-func ManagerConfigure(options ...ManagerConfigOption) *ManagerConfig {
-	config := defaultManagerConfig()
-	for _, option := range options {
-		option(config)
-	}
-	return config
-}
-
-func WithCodec(codec ICodec) ManagerConfigOption {
-	return func(config *ManagerConfig) {
-		config.Codec = codec
-	}
-}
-
-func WithConnectLimit(limit int32) ManagerConfigOption {
-	return func(config *ManagerConfig) {
-		config.ConnectLimit = limit
-	}
-}
-
-func WithTimeout(timeout int32) ManagerConfigOption {
-	return func(config *ManagerConfig) {
-		config.Timeout = timeout
 	}
 }
 
@@ -62,12 +35,12 @@ type Manager struct {
 	msgHandler       IMsgHandler
 }
 
-func NewManager(options ...ManagerConfigOption) *Manager {
-	config := ManagerConfigure(options...)
+func NewManager() *Manager {
+	config := defaultConfig()
 	return NewManagerWithConfig(config)
 }
 
-func NewManagerWithConfig(config *ManagerConfig) *Manager {
+func NewManagerWithConfig(config *Config) *Manager {
 	m := &Manager{
 		sessionMap:       sync.Map{},
 		listeners:        make([]IListener, 0),
@@ -75,6 +48,7 @@ func NewManagerWithConfig(config *ManagerConfig) *Manager {
 	}
 	m.idGen = config.SessionStartId
 	m.codec = config.Codec
+	m.msgHandler = config.MsgHandler
 	m.connectLimit = config.ConnectLimit
 	m.timeout = config.Timeout
 	return m
@@ -146,4 +120,10 @@ func (sm *Manager) Start() {
 			}
 		}
 	}()
+}
+
+func (sm *Manager) OnDestroy() {
+	for _, ln := range sm.listeners {
+		ln.Stop()
+	}
 }

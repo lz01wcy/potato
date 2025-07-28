@@ -1,0 +1,16 @@
+syntax = "proto3";
+package nice;
+option go_package = "/nice";
+
+message Input {
+  int32 a = 1;
+  int32 b = 2;
+}
+
+message Output {
+  int32 result = 1;
+}
+
+service Calculator {
+  rpc Sum(Input) returns (Output);
+}

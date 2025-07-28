@@ -3,10 +3,11 @@ package main
 import (
 	"github.com/murang/potato/app"
 	"github.com/murang/potato/net"
+	"github.com/murang/potato/rpc"
 )
 
 const (
-	NiceModuleId = 1
+	NiceModuleId = iota
 )
 
 func main() {
@@ -16,19 +17,35 @@ func main() {
 	// 一个app可以注册多个模块 每个模块有自己的帧率 帧率设置为0的话就是不tick
 	a.RegisterModule(NiceModuleId, &NiceModule{})
 
-	// 网络管理器 可传入配置
-	netManager := net.NewManager(net.WithCodec(&net.PbCodec{})) // 使用protobuf
-	// 设置消息处理器 消息处理器需要实现IMsgHandler
-	netManager.SetMsgHandler(&MsgHandler{})
-	// 网络监听器 支持tcp/kcp/ws 可支持同时接收多个监听器消息
+	// 网络设置
+	a.SetNetConfig(&net.Config{
+		SessionStartId: 0,
+		ConnectLimit:   1000,
+		Timeout:        30,
+		Codec:          &net.PbCodec{},
+		MsgHandler:     &MyMsgHandler{},
+	})
+	// 网络监听器 支持tcp/kcp/ws
 	ln, err := net.NewListener("tcp", ":10086")
 	if err != nil {
 		panic(err)
 	}
-	netManager.AddListener(ln)
-	netManager.Start() // 启动网络管理器 收到消息后会回调消息处理器的对应方法
+	// 添加网络监听器 可支持同时接收多个监听器消息
+	a.GetNetManager().AddListener(ln)
 
-	a.Init(nil)    // 初始化app 入参为启动函数 在初始化所有组件后执行
-	a.StartRun()   // 启动app 所有组件开始tick 主线程阻塞
-	a.Destroy(nil) // 主线程开始退出 所有组件销毁后执行入参函数
+	// rpc设置
+	a.SetRpcConfig(&rpc.Config{
+		ClusterName: "nice",
+		Consul:      "0.0.0.0:8500",
+		ServiceKind: nil, // 当前节点没有service 就不用设置
+	})
+
+	a.Start(func() bool { // 初始化app 入参为启动函数 在初始化所有组件后执行
+		println("all module started, server start")
+		return true
+	})
+	a.StartUpdate() // 开始update 所有组件开始tick 主线程阻塞
+	a.End(func() {  // 主线程开始退出 所有组件销毁后执行入参函数
+		println("all module stopped, server stop")
+	})
 }

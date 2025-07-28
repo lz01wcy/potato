@@ -3,8 +3,11 @@ package app
 import (
 	"errors"
 	"github.com/asynkron/protoactor-go/actor"
+	"github.com/asynkron/protoactor-go/cluster"
 	"github.com/asynkron/protoactor-go/scheduler"
 	"github.com/murang/potato/log"
+	"github.com/murang/potato/net"
+	"github.com/murang/potato/rpc"
 	"os"
 	"os/signal"
 	"reflect"
@@ -22,10 +25,13 @@ var (
 
 type Application struct {
 	exit        bool
-	actorSystem *actor.ActorSystem
 	id2mod      map[ModuleID]IModule // ModuleID -> IModule
 	id2pid      sync.Map             // ModuleID -> actor PID
 	cancels     []scheduler.CancelFunc
+	actorSystem *actor.ActorSystem
+	netManager  *net.Manager
+	cluster     *cluster.Cluster
+	rpcManager  *rpc.Manager
 }
 
 func Instance() *Application {
@@ -46,6 +52,26 @@ func NewApplication() *Application {
 
 func (a *Application) GetActorSystem() *actor.ActorSystem {
 	return a.actorSystem
+}
+func (a *Application) SetCluster(cls *cluster.Cluster) {
+	a.cluster = cls
+}
+func (a *Application) GetCluster() *cluster.Cluster {
+	return a.cluster
+}
+func (a *Application) GetNetManager() *net.Manager {
+	return a.netManager
+}
+func (a *Application) GetRpcManager() *rpc.Manager {
+	return a.rpcManager
+}
+
+func (a *Application) SetNetConfig(config *net.Config) {
+	a.netManager = net.NewManagerWithConfig(config)
+}
+
+func (a *Application) SetRpcConfig(config *rpc.Config) {
+	a.rpcManager = rpc.NewManagerWithConfig(config)
 }
 
 func (a *Application) RegisterModule(modId ModuleID, mod IModule) {
@@ -73,7 +99,7 @@ func (a *Application) RequestToModule(modId ModuleID, msg interface{}) (interfac
 	}
 }
 
-func (a *Application) Init(f func() bool) bool {
+func (a *Application) Start(f func() bool) bool {
 	// catch signal
 	go func() {
 		c := make(chan os.Signal, 1)
@@ -87,6 +113,13 @@ func (a *Application) Init(f func() bool) bool {
 		time.Sleep(2 * time.Second)
 		os.Exit(1)
 	}()
+
+	if a.netManager != nil {
+		a.netManager.Start()
+	}
+	if a.rpcManager != nil {
+		a.cluster = a.rpcManager.Start(a.actorSystem)
+	}
 
 	for mid, mod := range a.id2mod {
 		props := actor.PropsFromProducer(func() actor.Actor {
@@ -108,7 +141,7 @@ func (a *Application) Init(f func() bool) bool {
 	return true
 }
 
-func (a *Application) StartRun() {
+func (a *Application) StartUpdate() {
 	sch := scheduler.NewTimerScheduler(a.actorSystem.Root)
 	for mid, mod := range a.id2mod {
 		if mod.FPS() > 0 {
@@ -125,7 +158,7 @@ func (a *Application) StartRun() {
 	}
 }
 
-func (a *Application) Destroy(f func()) {
+func (a *Application) End(f func()) {
 	for _, cancel := range a.cancels {
 		cancel()
 	}
