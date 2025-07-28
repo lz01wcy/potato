@@ -1,10 +1,8 @@
 package main
 
 import (
-	"github.com/murang/potato/example/nicepb/nice"
 	"github.com/murang/potato/log"
 	"github.com/murang/potato/net"
-	"github.com/murang/potato/pb"
 	"google.golang.org/protobuf/proto"
 	"reflect"
 )
@@ -26,7 +24,7 @@ func (m MyMsgHandler) OnSessionClose(session *net.Session) {
 
 func (m MyMsgHandler) OnMsg(session *net.Session, msg any) {
 	log.Sugar.Infof("handler got msg: %v", msg)
-	handler, ok := msgDispatcher[nice.MsgId(pb.GetIdByType(reflect.TypeOf(msg).Elem()))]
+	handler, ok := msgDispatcher[reflect.TypeOf(msg).Elem()]
 	if !ok {
 		log.Sugar.Errorf("handler got unknown msg: %v", msg)
 		return

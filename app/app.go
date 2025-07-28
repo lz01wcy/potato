@@ -114,9 +114,11 @@ func (a *Application) Start(f func() bool) bool {
 		os.Exit(1)
 	}()
 
+	// 网络
 	if a.netManager != nil {
 		a.netManager.Start()
 	}
+	// rpc
 	if a.rpcManager != nil {
 		a.cluster = a.rpcManager.Start(a.actorSystem)
 	}

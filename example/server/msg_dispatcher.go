@@ -5,6 +5,7 @@ import (
 	"github.com/murang/potato/example/nicepb/nice"
 	"github.com/murang/potato/log"
 	"google.golang.org/protobuf/proto"
+	"reflect"
 )
 
 // 用泛型定义函数 让入参可以是不同类型 方便路由不同消息
@@ -21,8 +22,8 @@ func WrapHandler[T proto.Message](handler HandlerFunc[T]) func(agent *Agent, msg
 }
 
 // 消息分发
-var msgDispatcher = map[nice.MsgId]func(agent *Agent, msg proto.Message){
-	nice.MsgId_c2s_Hello: WrapHandler(Hello),
+var msgDispatcher = map[reflect.Type]func(agent *Agent, msg proto.Message){
+	reflect.TypeOf(nice.C2S_Hello{}): WrapHandler(Hello),
 	// ...
 }
 

@@ -31,6 +31,7 @@ func (n *NiceModule) OnMsg(msg interface{}) {
 
 func (n *NiceModule) OnRequest(msg interface{}) interface{} {
 	log.Sugar.Infof("request: %v", msg)
+	// 自定义id用于在service方生成虚拟actor 在service节点没有变动的情况下 同一个identity会始终路由到同一个service
 	grain := nice.GetCalculatorGrainClient(app.Instance().GetCluster(), "NiceIdentity")
 	sum, err := grain.Sum(&nice.Input{A: 6, B: 6})
 	if err != nil {
