@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/murang/potato/app"
+	"github.com/murang/potato/log"
 	"github.com/murang/potato/net"
 	"github.com/murang/potato/rpc"
 )
@@ -41,11 +42,11 @@ func main() {
 	})
 
 	a.Start(func() bool { // 初始化app 入参为启动函数 在初始化所有组件后执行
-		println("all module started, server start")
+		log.Logger.Info("all module started, server start")
 		return true
 	})
 	a.StartUpdate() // 开始update 所有组件开始tick 主线程阻塞
-	a.End(func() {  // 主线程开始退出 所有组件销毁后执行入参函数
-		println("all module stopped, server stop")
+	a.End(func() { // 主线程开始退出 所有组件销毁后执行入参函数
+		log.Logger.Info("all module stopped, server stop")
 	})
 }

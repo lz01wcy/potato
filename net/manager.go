@@ -48,9 +48,18 @@ func NewManagerWithConfig(config *Config) *Manager {
 	}
 	m.idGen = config.SessionStartId
 	m.codec = config.Codec
-	m.msgHandler = config.MsgHandler
+	if config.Codec == nil {
+		config.Codec = &JsonCodec{}
+	}
 	m.connectLimit = config.ConnectLimit
+	if m.connectLimit <= 0 {
+		m.connectLimit = 50000
+	}
 	m.timeout = config.Timeout
+	if m.timeout <= 0 {
+		m.timeout = 30
+	}
+	m.msgHandler = config.MsgHandler
 	return m
 }
 

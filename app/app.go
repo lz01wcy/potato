@@ -29,8 +29,8 @@ type Application struct {
 	id2pid      sync.Map             // ModuleID -> actor PID
 	cancels     []scheduler.CancelFunc
 	actorSystem *actor.ActorSystem
-	netManager  *net.Manager
 	cluster     *cluster.Cluster
+	netManager  *net.Manager
 	rpcManager  *rpc.Manager
 }
 
@@ -105,7 +105,7 @@ func (a *Application) Start(f func() bool) bool {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGILL, syscall.SIGTRAP, syscall.SIGABRT)
 		log.Sugar.Infof("caught signal: %v", <-c)
-		a.exit = true
+		a.Exit()
 		time.Sleep(1 * time.Minute)
 		var buf [65536]byte
 		n := runtime.Stack(buf[:], true)
