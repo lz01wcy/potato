@@ -18,8 +18,6 @@ import (
 )
 
 var (
-	instance               *Application
-	once                   sync.Once
 	errModuleNotRegistered = errors.New("module has not been registered")
 )
 
@@ -32,13 +30,6 @@ type Application struct {
 	cluster     *cluster.Cluster
 	netManager  *net.Manager
 	rpcManager  *rpc.Manager
-}
-
-func Instance() *Application {
-	once.Do(func() {
-		instance = NewApplication()
-	})
-	return instance
 }
 
 func NewApplication() *Application {

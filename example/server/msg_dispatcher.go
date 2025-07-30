@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/murang/potato/app"
+	"github.com/murang/potato"
 	"github.com/murang/potato/example/nicepb/nice"
 	"github.com/murang/potato/log"
 	"google.golang.org/protobuf/proto"
@@ -28,7 +28,7 @@ var msgDispatcher = map[reflect.Type]func(agent *Agent, msg proto.Message){
 }
 
 func Hello(agent *Agent, msg *nice.C2S_Hello) {
-	resp, err := app.Instance().RequestToModule(NiceModuleId, msg.Name) // 发消息到其他模块去处理逻辑
+	resp, err := potato.Instance().RequestToModule(NiceModuleId, msg.Name) // 发消息到其他模块去处理逻辑
 	if err != nil {
 		log.Sugar.Errorf("request to module failed: %v", err)
 		return
