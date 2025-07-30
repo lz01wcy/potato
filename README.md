@@ -160,24 +160,28 @@ res, err := grain.DoSth(&pb.Req{A: 6, B: 6})
 强烈推荐对这个框架感兴趣的同学可以深入学习一下以便于实现满足自己的需求。
 
 * app
-    : Application的实现, 管理整个进程的生命周期。 
-    : 不同模块通过actor模型运行在不同的goroutine中, 模块中的业务逻辑可以不用考虑并发。 
-    : 模块间的通讯需要通过Application的SendToModule和RequestToModule方法，让消息用队列的方式处理。
+    - Application的实现, 管理整个进程的生命周期。 
+    - 不同模块通过actor模型运行在不同的goroutine中, 模块中的业务逻辑可以不用考虑并发。 
+    - 模块间的通讯需要通过Application的SendToModule和RequestToModule方法，让消息用队列的方式处理。
 
 * net
-    : 网络模块，管理网络监听器，会话，消息编解码等等。
-    : 通过抽象监听器和编解码接口，适配不同的网络协议。
-    : 每个网络连接的消息收发都是在各自的goroutine中，并发效率高。
+    - 网络模块，管理网络监听器，会话，消息编解码等等。
+    - 通过抽象监听器和编解码接口，适配不同的网络协议。
+    - 每个网络连接的消息收发都是在各自的goroutine中，并发效率高。
 
 * pb
-    : protobuf消息注册模块，管理protobuf消息的注册
-    : 代码生成插件帮助消息代码生成时自动注册到消息列表中，无需手动注册 详情见 [protoc-gen-autoregister](https://github.com/murang/potato/tree/master/pb/README.md)
+    - protobuf消息注册模块，管理protobuf消息的注册
+    - 代码生成插件帮助消息代码生成时自动注册到消息列表中，无需手动注册 详情见 [protoc-gen-autoregister](https://github.com/murang/potato/tree/master/pb/README.md)
 
 * rpc
-    : rpc模块，rpc管理器的生命周期管理
+    - rpc模块，rpc管理器的生命周期管理
 
 * log
-    : 日志模块，管理日志的输出
-    : 日志输出用到了大名鼎鼎的zap，持久化日志通过lumberjack实现。
-    : 不进行任何设置的话 默认输出到标准输出。通过InitLogger进行设置，可实现自定义日志级别，保存文件夹，保存天数等等。
-    : webhook用于服务器报错通知到飞书，钉钉等。
+    - 日志模块，管理日志的输出
+    - 日志输出用到了大名鼎鼎的zap，持久化日志通过lumberjack实现。
+    - 不进行任何设置的话 默认输出到标准输出。通过InitLogger进行设置，可实现自定义日志级别，保存文件夹，保存天数等等。
+    - webhook用于服务器报错通知到飞书，钉钉等。
+
+### tips
+- 数据库，缓存等等模块通常需要根据具体需求来进行选择，并且有很多优秀的库可供选择，这里就不做设计了。
+- 根据压力测试的火焰图分析，通常游戏服务器的网络通信这部分会占用绝大部分cpu资源，所以不用刻意把业务逻辑分割到过多的goroutine中。如同传统的c++游戏服务器，只要把阻塞业务放到其他线程，一个主线程基本就能满足所有计算逻辑。单线程的主循环更方便进行性能监控和优化。
