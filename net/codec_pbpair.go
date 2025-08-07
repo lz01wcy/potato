@@ -2,27 +2,15 @@ package net
 
 import (
 	"encoding/binary"
-	"errors"
 	"github.com/murang/potato/pb"
 	"google.golang.org/protobuf/proto"
 	"reflect"
 )
 
-// pb消息按照 【消息id + 消息内容bytes】 的格式进行传输 消息id占4字节
-
-const (
-	lenMsgId = 4
-)
-
-var (
-	ErrorMsgNotRegister  = errors.New("msg not register")
-	ErrorMsgTypeNotMatch = errors.New("msg type not match protobuf")
-)
-
-type PbCodec struct {
+type PbPairCodec struct {
 }
 
-func (c *PbCodec) Encode(v interface{}) (msgBytes []byte, err error) {
+func (c *PbPairCodec) Encode(v interface{}) (msgBytes []byte, err error) {
 	msgType := reflect.TypeOf(v).Elem()
 
 	msgId := pb.GetIdByType(msgType)
@@ -50,10 +38,10 @@ func (c *PbCodec) Encode(v interface{}) (msgBytes []byte, err error) {
 	return
 }
 
-func (c *PbCodec) Decode(data []byte) (msg interface{}, err error) {
+func (c *PbPairCodec) Decode(data []byte) (msg interface{}, err error) {
 	// 取出消息id
 	msgId := binary.BigEndian.Uint32(data)
-	msgType := pb.GetTypeById(msgId)
+	msgType := pb.GetC2STypeById(msgId) // 和PbCodec不一样 这里需要区别是c2s还是s2c
 	if msgType == nil {
 		err = ErrorMsgNotRegister
 		return

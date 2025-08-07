@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.33.0
 // 	protoc        v5.27.1
-// source: nice.proto
+// source: pair.proto
 
-package nice
+package pair
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -23,22 +23,22 @@ const (
 type MsgId int32
 
 const (
-	MsgId_Unknown   MsgId = 0
-	MsgId_c2s_Hello MsgId = 100
-	MsgId_s2c_Hello MsgId = 101
+	MsgId_Unknown MsgId = 0
+	MsgId_Hello   MsgId = 100
+	MsgId_Notify  MsgId = 101
 )
 
 // Enum value maps for MsgId.
 var (
 	MsgId_name = map[int32]string{
 		0:   "Unknown",
-		100: "c2s_Hello",
-		101: "s2c_Hello",
+		100: "Hello",
+		101: "Notify",
 	}
 	MsgId_value = map[string]int32{
-		"Unknown":   0,
-		"c2s_Hello": 100,
-		"s2c_Hello": 101,
+		"Unknown": 0,
+		"Hello":   100,
+		"Notify":  101,
 	}
 )
 
@@ -53,11 +53,11 @@ func (x MsgId) String() string {
 }
 
 func (MsgId) Descriptor() protoreflect.EnumDescriptor {
-	return file_nice_proto_enumTypes[0].Descriptor()
+	return file_pair_proto_enumTypes[0].Descriptor()
 }
 
 func (MsgId) Type() protoreflect.EnumType {
-	return &file_nice_proto_enumTypes[0]
+	return &file_pair_proto_enumTypes[0]
 }
 
 func (x MsgId) Number() protoreflect.EnumNumber {
@@ -66,7 +66,7 @@ func (x MsgId) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use MsgId.Descriptor instead.
 func (MsgId) EnumDescriptor() ([]byte, []int) {
-	return file_nice_proto_rawDescGZIP(), []int{0}
+	return file_pair_proto_rawDescGZIP(), []int{0}
 }
 
 type C2S_Hello struct {
@@ -80,7 +80,7 @@ type C2S_Hello struct {
 func (x *C2S_Hello) Reset() {
 	*x = C2S_Hello{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_nice_proto_msgTypes[0]
+		mi := &file_pair_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -93,7 +93,7 @@ func (x *C2S_Hello) String() string {
 func (*C2S_Hello) ProtoMessage() {}
 
 func (x *C2S_Hello) ProtoReflect() protoreflect.Message {
-	mi := &file_nice_proto_msgTypes[0]
+	mi := &file_pair_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -106,7 +106,7 @@ func (x *C2S_Hello) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use C2S_Hello.ProtoReflect.Descriptor instead.
 func (*C2S_Hello) Descriptor() ([]byte, []int) {
-	return file_nice_proto_rawDescGZIP(), []int{0}
+	return file_pair_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *C2S_Hello) GetName() string {
@@ -127,7 +127,7 @@ type S2C_Hello struct {
 func (x *S2C_Hello) Reset() {
 	*x = S2C_Hello{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_nice_proto_msgTypes[1]
+		mi := &file_pair_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -140,7 +140,7 @@ func (x *S2C_Hello) String() string {
 func (*S2C_Hello) ProtoMessage() {}
 
 func (x *S2C_Hello) ProtoReflect() protoreflect.Message {
-	mi := &file_nice_proto_msgTypes[1]
+	mi := &file_pair_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -153,7 +153,7 @@ func (x *S2C_Hello) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use S2C_Hello.ProtoReflect.Descriptor instead.
 func (*S2C_Hello) Descriptor() ([]byte, []int) {
-	return file_nice_proto_rawDescGZIP(), []int{1}
+	return file_pair_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *S2C_Hello) GetSayHi() string {
@@ -163,41 +163,92 @@ func (x *S2C_Hello) GetSayHi() string {
 	return ""
 }
 
-var File_nice_proto protoreflect.FileDescriptor
+// 主动通知消息 没有c2s
+type S2C_Notify struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 
-var file_nice_proto_rawDesc = []byte{
-	0x0a, 0x0a, 0x6e, 0x69, 0x63, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x04, 0x6e, 0x69,
-	0x63, 0x65, 0x22, 0x1f, 0x0a, 0x09, 0x43, 0x32, 0x53, 0x5f, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x12,
+	Content string `protobuf:"bytes,1,opt,name=content,proto3" json:"content,omitempty"`
+}
+
+func (x *S2C_Notify) Reset() {
+	*x = S2C_Notify{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pair_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *S2C_Notify) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*S2C_Notify) ProtoMessage() {}
+
+func (x *S2C_Notify) ProtoReflect() protoreflect.Message {
+	mi := &file_pair_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use S2C_Notify.ProtoReflect.Descriptor instead.
+func (*S2C_Notify) Descriptor() ([]byte, []int) {
+	return file_pair_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *S2C_Notify) GetContent() string {
+	if x != nil {
+		return x.Content
+	}
+	return ""
+}
+
+var File_pair_proto protoreflect.FileDescriptor
+
+var file_pair_proto_rawDesc = []byte{
+	0x0a, 0x0a, 0x70, 0x61, 0x69, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x04, 0x70, 0x61,
+	0x69, 0x72, 0x22, 0x1f, 0x0a, 0x09, 0x43, 0x32, 0x53, 0x5f, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x12,
 	0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e,
 	0x61, 0x6d, 0x65, 0x22, 0x21, 0x0a, 0x09, 0x53, 0x32, 0x43, 0x5f, 0x48, 0x65, 0x6c, 0x6c, 0x6f,
 	0x12, 0x14, 0x0a, 0x05, 0x73, 0x61, 0x79, 0x48, 0x69, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x05, 0x73, 0x61, 0x79, 0x48, 0x69, 0x2a, 0x32, 0x0a, 0x05, 0x4d, 0x73, 0x67, 0x49, 0x64, 0x12,
-	0x0b, 0x0a, 0x07, 0x55, 0x6e, 0x6b, 0x6e, 0x6f, 0x77, 0x6e, 0x10, 0x00, 0x12, 0x0d, 0x0a, 0x09,
-	0x63, 0x32, 0x73, 0x5f, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x10, 0x64, 0x12, 0x0d, 0x0a, 0x09, 0x73,
-	0x32, 0x63, 0x5f, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x10, 0x65, 0x42, 0x07, 0x5a, 0x05, 0x2f, 0x6e,
-	0x69, 0x63, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x05, 0x73, 0x61, 0x79, 0x48, 0x69, 0x22, 0x26, 0x0a, 0x0a, 0x53, 0x32, 0x43, 0x5f, 0x4e, 0x6f,
+	0x74, 0x69, 0x66, 0x79, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2a, 0x2b,
+	0x0a, 0x05, 0x4d, 0x73, 0x67, 0x49, 0x64, 0x12, 0x0b, 0x0a, 0x07, 0x55, 0x6e, 0x6b, 0x6e, 0x6f,
+	0x77, 0x6e, 0x10, 0x00, 0x12, 0x09, 0x0a, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x10, 0x64, 0x12,
+	0x0a, 0x0a, 0x06, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x79, 0x10, 0x65, 0x42, 0x07, 0x5a, 0x05, 0x2f,
+	0x70, 0x61, 0x69, 0x72, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
-	file_nice_proto_rawDescOnce sync.Once
-	file_nice_proto_rawDescData = file_nice_proto_rawDesc
+	file_pair_proto_rawDescOnce sync.Once
+	file_pair_proto_rawDescData = file_pair_proto_rawDesc
 )
 
-func file_nice_proto_rawDescGZIP() []byte {
-	file_nice_proto_rawDescOnce.Do(func() {
-		file_nice_proto_rawDescData = protoimpl.X.CompressGZIP(file_nice_proto_rawDescData)
+func file_pair_proto_rawDescGZIP() []byte {
+	file_pair_proto_rawDescOnce.Do(func() {
+		file_pair_proto_rawDescData = protoimpl.X.CompressGZIP(file_pair_proto_rawDescData)
 	})
-	return file_nice_proto_rawDescData
+	return file_pair_proto_rawDescData
 }
 
-var file_nice_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_nice_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
-var file_nice_proto_goTypes = []interface{}{
-	(MsgId)(0),        // 0: nice.MsgId
-	(*C2S_Hello)(nil), // 1: nice.C2S_Hello
-	(*S2C_Hello)(nil), // 2: nice.S2C_Hello
+var file_pair_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_pair_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_pair_proto_goTypes = []interface{}{
+	(MsgId)(0),         // 0: pair.MsgId
+	(*C2S_Hello)(nil),  // 1: pair.C2S_Hello
+	(*S2C_Hello)(nil),  // 2: pair.S2C_Hello
+	(*S2C_Notify)(nil), // 3: pair.S2C_Notify
 }
-var file_nice_proto_depIdxs = []int32{
+var file_pair_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -205,13 +256,13 @@ var file_nice_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_nice_proto_init() }
-func file_nice_proto_init() {
-	if File_nice_proto != nil {
+func init() { file_pair_proto_init() }
+func file_pair_proto_init() {
+	if File_pair_proto != nil {
 		return
 	}
 	if !protoimpl.UnsafeEnabled {
-		file_nice_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+		file_pair_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*C2S_Hello); i {
 			case 0:
 				return &v.state
@@ -223,8 +274,20 @@ func file_nice_proto_init() {
 				return nil
 			}
 		}
-		file_nice_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+		file_pair_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*S2C_Hello); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pair_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*S2C_Notify); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -240,19 +303,19 @@ func file_nice_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: file_nice_proto_rawDesc,
+			RawDescriptor: file_pair_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_nice_proto_goTypes,
-		DependencyIndexes: file_nice_proto_depIdxs,
-		EnumInfos:         file_nice_proto_enumTypes,
-		MessageInfos:      file_nice_proto_msgTypes,
+		GoTypes:           file_pair_proto_goTypes,
+		DependencyIndexes: file_pair_proto_depIdxs,
+		EnumInfos:         file_pair_proto_enumTypes,
+		MessageInfos:      file_pair_proto_msgTypes,
 	}.Build()
-	File_nice_proto = out.File
-	file_nice_proto_rawDesc = nil
-	file_nice_proto_goTypes = nil
-	file_nice_proto_depIdxs = nil
+	File_pair_proto = out.File
+	file_pair_proto_rawDesc = nil
+	file_pair_proto_goTypes = nil
+	file_pair_proto_depIdxs = nil
 }

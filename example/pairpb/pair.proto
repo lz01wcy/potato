@@ -1,0 +1,21 @@
+syntax = "proto3";
+package pair;
+option go_package = "/pair";
+
+enum MsgId {
+  Unknown = 0;
+  Hello = 100;
+  Notify = 101;
+}
+
+message C2S_Hello {
+  string name = 1;
+}
+message S2C_Hello {
+  string sayHi = 1;
+}
+
+// 主动通知消息 没有c2s
+message S2C_Notify {
+  string content = 1;
+}

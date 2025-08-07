@@ -3,7 +3,7 @@ package nice;
 option go_package = "/nice";
 
 enum MsgId {
-  none = 0;
+  Unknown = 0;
   c2s_Hello = 100;
   s2c_Hello = 101;
 }

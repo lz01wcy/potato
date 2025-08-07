@@ -70,7 +70,7 @@ func extractMessages(enums []*protogen.Enum) (messages []any) {
 			for _, value := range enum.Values {
 				parts := strings.Split(value.GoIdent.GoName, "_")
 				if len(parts) != 3 { // MsgId_c2s_xxx
-					continue // 比如none之类的 不注册
+					continue // 比如Unknown之类的 不注册
 				}
 				message := fmt.Sprintf("%s_%s", strings.ToUpper(parts[1]), parts[2])
 				messages = append(messages, struct {

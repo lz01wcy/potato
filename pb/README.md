@@ -12,6 +12,10 @@
 ```bash
 go install github.com/murang/potato/pb/protoc-gen-autoregister@latest
 ```
+或者用于一个消息id对应一个消息对的格式
+```bash
+go install github.com/murang/potato/pb/protoc-gen-autoregisterpair@latest
+```
 
 2. 编写proto文件
 ```proto
@@ -26,7 +30,7 @@ option go_package = "/your_pack";
 // 具体格式参考如下消息
 
 enum MsgId {
-  none = 0; // proto3默认枚举从0开始 保留此项用于占位 它不会被自动注册
+  unknown = 0; // proto3默认枚举从0开始 保留此项用于占位 它不会被自动注册
   c2s_Heartbeat = 1; // 心跳 客户端 -> 服务器
   s2c_Heartbeat = 2; // 心跳 服务器 -> 客户端
 }
@@ -37,11 +41,36 @@ message S2C_Heartbeat {
   int64 timestamp = 1; // 当前服务器时间戳
 }
 ```
+如果是一个消息id对应一个消息对的话 那么格式如下
+```proto
+enum MsgId {
+  Unknown = 0;
+  Hello = 100;
+  Notify = 101;
+}
+
+message C2S_Hello {
+  string name = 1;
+}
+message S2C_Hello {
+  string sayHi = 1;
+}
+
+// 主动通知消息 没有c2s
+message S2C_Notify {
+  string content = 1;
+}
+```
 
 3. 编译proto文件 在proto文件所在的目录下（或者其他目录，请自行调整命令参数）
 ```bash
 protoc --go_out=. --autoregister_out=. *.proto
 ```
+或者生成消息对注册
+```bash
+protoc --go_out=. --autoregisterpair_out=. *.proto
+```
+
 4. 检查生成的注册文件 `your_prroto_autoregister.go`
 ```bash
 current_dir
