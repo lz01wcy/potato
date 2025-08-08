@@ -51,24 +51,24 @@ func initDefaultLogger() {
 }
 
 // InitLogger 初始化日志
-// logDir 日志文件夹
-// logFile 日志文件名
-// logLevel 日志级别
-// logMaxSize 每个日志文件保存的最大尺寸 单位:M
-// logMaxBackups 日志文件最多保存多少个备份
-// logMaxAge 日志文件最多保存多少天
-// logCompress 是否压缩
-// errorDump 是否单独输出错误日志到文件
-func InitLogger(logDir, logFile, logLevel string, logMaxSize, logMaxBackups, logMaxAge int, logCompress, errorDump bool) {
+// path 日志文件夹
+// fileName 日志文件名
+// level 日志级别
+// maxSize 每个日志文件保存的最大尺寸 单位:M
+// maxBackups 日志文件最多保存多少个备份
+// maxAge 日志文件最多保存多少天
+// compress 是否压缩
+// focusError 是否单独输出错误日志到文件
+func InitLogger(path, fileName, level string, maxSize, maxBackups, maxAge int, compress, focusError bool) {
 	// 先创建文件夹
-	if err := os.MkdirAll(logDir, 0755); err != nil {
+	if err := os.MkdirAll(path, 0755); err != nil {
 		panic(err)
 	}
 
 	//自定义日志级别：自定义级别
-	l, ok := levelMap[logLevel]
+	l, ok := levelMap[level]
 	if !ok {
-		println("InitLog error: unknown log level: ", logLevel, " available:[debug|info|warn|error] (defaulting to info)")
+		println("InitLog error: unknown log level: ", level, " available:[debug|info|warn|error] (defaulting to info)")
 		l = zapcore.InfoLevel
 	}
 	customLevel = zap.NewAtomicLevelAt(l)
@@ -82,13 +82,13 @@ func InitLogger(logDir, logFile, logLevel string, logMaxSize, logMaxBackups, log
 
 	// 实现多个输出
 	// 获取io.Writer
-	infoWriter := getWriter(fmt.Sprintf("%s/%s.log", logDir, logFile), logMaxSize, logMaxBackups, logMaxAge, logCompress)
+	infoWriter := getWriter(fmt.Sprintf("%s/%s.log", path, fileName), maxSize, maxBackups, maxAge, compress)
 	cores := []zapcore.Core{
 		zapcore.NewCore(encoder, zapcore.AddSync(infoWriter), customLevel), //将自定义等级及以上写入正常日志
 		zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), customLevel),  //标准输出
 	}
-	if errorDump {
-		errWriter := getWriter(fmt.Sprintf("%s/%s_err.log", logDir, logFile), logMaxSize, logMaxBackups, logMaxAge, logCompress)
+	if focusError {
+		errWriter := getWriter(fmt.Sprintf("%s/%s_err.log", path, fileName), maxSize, maxBackups, maxAge, compress)
 		cores = append(cores, zapcore.NewCore(encoder, zapcore.AddSync(errWriter), errorLevel)) //error及以上写入错误日志
 	}
 	tee := zapcore.NewTee(cores...)
