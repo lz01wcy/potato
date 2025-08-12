@@ -124,6 +124,7 @@ app.SetRpcConfig(&rpc.Config{
     ServiceKind: []*cluster.Kind{nice.NewServiceKind(func() nice.Service { // 通过proto-actor的grain生成rpc相关代码生成的rpc服务 如果本服务没有供其他服务调用的rpc服务 可以不设置
     return &ServiceImpl{}
     }, 0)},
+    EventHandler: OnEvent, // event stream 集群广播事件处理器 如果没有需要处理的事件就不设置
 })
 ```
 rpc服务需要实现对应的rpc接口
@@ -141,6 +142,10 @@ func (c ServiceImpl) DoSth(req *pb.Req, ctx cluster.GrainContext) (*pb.Res, erro
 // 自定义id用于在service方生成虚拟actor 在service节点没有变动的情况下 同一个identity会始终路由到同一个service
 grain := nice.GetServicGrainClient(potato.Instance().GetCluster(), "MyIdentity")
 res, err := grain.DoSth(&pb.Req{A: 6, B: 6})
+```
+发送集群订阅事件
+```go
+potato.Instance().BroadcastEvent(&nice.EventHello{SayHello: "niceman"}, false) // 第二个参数为广播是否包含当前节点
 ```
 ---
 
@@ -172,9 +177,12 @@ res, err := grain.DoSth(&pb.Req{A: 6, B: 6})
 * pb
     - protobuf消息注册模块，管理protobuf消息的注册
     - 代码生成插件帮助消息代码生成时自动注册到消息列表中，无需手动注册 详情见 [protoc-gen-autoregister](https://github.com/murang/potato/tree/master/pb/README.md)
+    - 支持消息和ID一对一映射，以及消息ID与消息对的映射 Codec也做了相应支持
 
 * rpc
     - rpc模块，rpc管理器的生命周期管理
+    - 实现rpc功能自动注册到集群
+    - 可通过EventStream广播消息到集群的其他节点
 
 * log
     - 日志模块，管理日志的输出
