@@ -6,6 +6,7 @@ import (
 	"github.com/asynkron/protoactor-go/cluster"
 	"github.com/asynkron/protoactor-go/cluster/clusterproviders/consul"
 	"github.com/asynkron/protoactor-go/cluster/identitylookup/disthash"
+	"github.com/asynkron/protoactor-go/eventstream"
 	"github.com/asynkron/protoactor-go/remote"
 	"github.com/hashicorp/consul/api"
 	"github.com/murang/potato/log"
@@ -13,16 +14,19 @@ import (
 )
 
 type Config struct {
-	ClusterName string          // 集群名称
-	Consul      string          // 服务发现注册地址
-	ServiceKind []*cluster.Kind // 使用proto actor grain生成的服务类型
+	ClusterName  string          // 集群名称
+	Consul       string          // 服务发现注册地址
+	ServiceKind  []*cluster.Kind // 使用proto actor grain生成的服务类型
+	EventHandler func(any)       // event处理
 }
 
 type Manager struct {
 	cluster      *cluster.Cluster
-	clusterName  string          // 集群名称
-	consul       string          // 服务发现注册地址
-	serviceKinds []*cluster.Kind // 使用proto actor grain生成的服务类型
+	clusterName  string                    // 集群名称
+	consul       string                    // 服务发现注册地址
+	serviceKinds []*cluster.Kind           // 使用proto actor grain生成的服务类型
+	eventHandler func(any)                 // event stream处理
+	eventSub     *eventstream.Subscription // event stream订阅
 }
 
 func NewManagerWithConfig(config *Config) *Manager {
@@ -30,6 +34,7 @@ func NewManagerWithConfig(config *Config) *Manager {
 		clusterName:  config.ClusterName,
 		consul:       config.Consul,
 		serviceKinds: config.ServiceKind,
+		eventHandler: config.EventHandler,
 	}
 }
 
@@ -62,9 +67,16 @@ func (m *Manager) Start(actorSystem *actor.ActorSystem) (cls *cluster.Cluster) {
 	}
 
 	m.cluster.StartMember()
+
+	// 订阅通知
+	if m.eventHandler != nil {
+		m.eventSub = m.cluster.ActorSystem.EventStream.Subscribe(m.eventHandler)
+	}
+
 	return m.cluster
 }
 
 func (m *Manager) OnDestroy() {
+	m.cluster.ActorSystem.EventStream.Unsubscribe(m.eventSub)
 	m.cluster.Shutdown(true)
 }

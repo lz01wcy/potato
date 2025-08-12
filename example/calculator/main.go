@@ -15,6 +15,7 @@ func main() {
 		ServiceKind: []*cluster.Kind{nice.NewCalculatorKind(func() nice.Calculator {
 			return &CalculatorImpl{}
 		}, 0)},
+		EventHandler: OnEvent,
 	})
 
 	app.Start(nil) // 初始化app 入参为启动函数 在初始化所有组件后执行

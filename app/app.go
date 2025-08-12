@@ -44,9 +44,6 @@ func NewApplication() *Application {
 func (a *Application) GetActorSystem() *actor.ActorSystem {
 	return a.actorSystem
 }
-func (a *Application) SetCluster(cls *cluster.Cluster) {
-	a.cluster = cls
-}
 func (a *Application) GetCluster() *cluster.Cluster {
 	return a.cluster
 }
@@ -55,6 +52,13 @@ func (a *Application) GetNetManager() *net.Manager {
 }
 func (a *Application) GetRpcManager() *rpc.Manager {
 	return a.rpcManager
+}
+
+func (a *Application) BroadcastEvent(event any, includeSelf bool) {
+	if a.cluster == nil {
+		return
+	}
+	a.cluster.MemberList.BroadcastEvent(event, includeSelf)
 }
 
 func (a *Application) SetNetConfig(config *net.Config) {

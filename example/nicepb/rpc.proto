@@ -14,3 +14,7 @@ message Output {
 service Calculator {
   rpc Sum(Input) returns (Output);
 }
+
+message EventHello {
+  string sayHello = 1;
+}

@@ -19,6 +19,7 @@ func (n *NiceModule) OnStart() {
 }
 
 func (n *NiceModule) OnUpdate() {
+	potato.Instance().BroadcastEvent(&nice.EventHello{SayHello: "niceman"}, false)
 }
 
 func (n *NiceModule) OnDestroy() {
