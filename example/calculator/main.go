@@ -17,7 +17,7 @@ func main() {
 		}, 0)},
 	})
 
-	app.Start(nil)    // 初始化app 入参为启动函数 在初始化所有组件后执行
-	app.StartUpdate() // 启动app 所有组件开始tick 主线程阻塞
-	app.End(nil)      // 主线程开始退出 所有组件销毁后执行入参函数
+	app.Start(nil) // 初始化app 入参为启动函数 在初始化所有组件后执行
+	app.Run()      // 启动app 所有组件开始tick 主线程阻塞
+	app.End(nil)   // 主线程开始退出 所有组件销毁后执行入参函数
 }

@@ -90,7 +90,7 @@ func (a *Application) RequestToModule(modId ModuleID, msg interface{}) (interfac
 	}
 }
 
-func (a *Application) Start(f func() bool) bool {
+func (a *Application) Start(f func() bool) {
 	// catch signal
 	go func() {
 		c := make(chan os.Signal, 1)
@@ -127,14 +127,12 @@ func (a *Application) Start(f func() bool) bool {
 		ret := f()
 		if !ret {
 			_ = log.Logger.Sync()
+			os.Exit(1)
 		}
-		return ret
 	}
-
-	return true
 }
 
-func (a *Application) StartUpdate() {
+func (a *Application) Run() {
 	sch := scheduler.NewTimerScheduler(a.actorSystem.Root)
 	for mid, mod := range a.id2mod {
 		if mod.FPS() > 0 {
