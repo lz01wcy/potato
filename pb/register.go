@@ -6,6 +6,7 @@ import (
 	"reflect"
 )
 
+// ⚠️ 注册的消息type全是指针
 var (
 	id2Type = make(map[uint32]reflect.Type) // msgId -> type
 

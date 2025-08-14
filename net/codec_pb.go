@@ -23,7 +23,7 @@ type PbCodec struct {
 }
 
 func (c *PbCodec) Encode(v interface{}) (msgBytes []byte, err error) {
-	msgType := reflect.TypeOf(v).Elem()
+	msgType := reflect.TypeOf(v)
 
 	msgId := pb.GetIdByType(msgType)
 	if msgId == 0 {
@@ -60,7 +60,7 @@ func (c *PbCodec) Decode(data []byte) (msg interface{}, err error) {
 	}
 
 	// 消息反序列化
-	msg = reflect.New(msgType).Interface()
+	msg = reflect.New(msgType.Elem()).Interface()
 	err = proto.Unmarshal(data[lenMsgId:], msg.(proto.Message))
 	return
 }

@@ -7,6 +7,6 @@ import (
 )
 
 func init() {
-	pb.RegisterMsgPair(uint32(MsgId_Hello), reflect.TypeOf(C2S_Hello{}), reflect.TypeOf(S2C_Hello{}))
-	pb.RegisterMsgPair(uint32(MsgId_Notify), nil, reflect.TypeOf(S2C_Notify{}))
+	pb.RegisterMsgPair(uint32(MsgId_Hello), reflect.TypeOf(&C2S_Hello{}), reflect.TypeOf(&S2C_Hello{}))
+	pb.RegisterMsgPair(uint32(MsgId_Notify), nil, reflect.TypeOf(&S2C_Notify{}))
 }

@@ -91,10 +91,10 @@ func extractMessages(file *protogen.File) (messages []any) {
 			s2cStr := "nil"
 
 			if _, ok := c2sMap[fmt.Sprintf("C2S_%s", id)]; ok {
-				c2sStr = fmt.Sprintf("reflect.TypeOf(C2S_%s{})", id)
+				c2sStr = fmt.Sprintf("reflect.TypeOf(&C2S_%s{})", id)
 			}
 			if _, ok := s2cMap[fmt.Sprintf("S2C_%s", id)]; ok {
-				s2cStr = fmt.Sprintf("reflect.TypeOf(S2C_%s{})", id)
+				s2cStr = fmt.Sprintf("reflect.TypeOf(&S2C_%s{})", id)
 			}
 
 			messages = append(messages, struct {

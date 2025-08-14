@@ -23,7 +23,7 @@ func WrapHandler[T proto.Message](handler HandlerFunc[T]) func(agent *Agent, msg
 
 // 消息分发
 var msgDispatcher = map[reflect.Type]func(agent *Agent, msg proto.Message){
-	reflect.TypeOf(nice.C2S_Hello{}): WrapHandler(Hello),
+	reflect.TypeOf(&nice.C2S_Hello{}): WrapHandler(Hello),
 	// ...
 }
 

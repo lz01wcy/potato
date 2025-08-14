@@ -18,7 +18,7 @@ import (
 
 func init() {
     {{- range .Messages}}
-    pb.RegisterMsg(uint32({{ .Id }}), reflect.TypeOf({{ .Message }}{}))
+    pb.RegisterMsg(uint32({{ .Id }}), reflect.TypeOf(&{{ .Message }}{}))
     {{- end }}
 }
 `
