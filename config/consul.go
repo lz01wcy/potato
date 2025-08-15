@@ -10,7 +10,7 @@ import (
 )
 
 var consulClient *api.Client
-var onConfigChange = make([]func(string, string, IConfig), 0)
+var onConfigChange = make([]func(IConfig), 0)
 
 // 监听配置更新
 func watchConfigUpdate() {
@@ -70,7 +70,7 @@ func handleConfigChanges(pairs api.KVPairs) {
 				continue
 			}
 			for _, f := range onConfigChange {
-				f(fileNameWithoutExt, group.Path, cfg)
+				f(cfg)
 			}
 		}
 	}
