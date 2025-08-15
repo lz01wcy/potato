@@ -12,7 +12,11 @@ func getPool(t reflect.Type) *sync.Pool {
 	if !ok {
 		pool = &sync.Pool{
 			New: func() interface{} {
-				return reflect.New(t).Interface()
+				if t.Kind() == reflect.Ptr {
+					return reflect.New(t.Elem()).Interface()
+				} else {
+					return reflect.New(t).Interface()
+				}
 			},
 		}
 		poolMap.Store(t, pool)
