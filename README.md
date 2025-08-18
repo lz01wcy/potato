@@ -149,7 +149,7 @@ potato.Instance().BroadcastEvent(&nice.EventHello{SayHello: "niceman"}, false) /
 ```
 ---
 
-详细的功能代码可以参考 [example](https://github.com/murang/potato/tree/master/example)
+详细的功能代码可以参考 [example](https://github.com/murang/potato/tree/main/example)
 * server 用于客户端连接的服务器
 * calculator 用于计算的服务 server节点通过rpc调用calculator节点进行计算
 * client 客户端
@@ -178,7 +178,7 @@ potato.Instance().BroadcastEvent(&nice.EventHello{SayHello: "niceman"}, false) /
 
 * pb
     - protobuf消息注册模块，管理protobuf消息的注册
-    - 代码生成插件帮助消息代码生成时自动注册到消息列表中，无需手动注册 详情见 [protoc-gen-autoregister](https://github.com/murang/potato/tree/master/pb/README.md)
+    - 代码生成插件帮助消息代码生成时自动注册到消息列表中，无需手动注册 详情见 [protoc-gen-autoregister](https://github.com/murang/potato/tree/main/pb/README.md)
     - 支持消息和ID一对一映射，以及消息ID与消息对的映射 Codec也做了相应支持
 
 * rpc
@@ -193,7 +193,7 @@ potato.Instance().BroadcastEvent(&nice.EventHello{SayHello: "niceman"}, false) /
     - webhook用于服务器报错通知到飞书，钉钉等。
 
 * config
-  - 配置读取 详细可以参考[config](https://github.com/murang/potato/tree/master/config/README.md)
+  - 配置读取 详细可以参考[config](https://github.com/murang/potato/tree/main/config/README.md)
   - 配置文件格式当前只支持json。支持读取本地文件和从consul中读取配置。
   - 可加载同类型但是不同数据的配置，同类型配置通过tag区分，主要解决问题就是AB测试的时候使用不同配置
   - 加载本地配置的时候需要传入tag用于检索配置文件
