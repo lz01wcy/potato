@@ -20,7 +20,7 @@ func (w WorkModule) OnStart() {
 	config.LoadConfig(&UserConfig{})
 	config.LoadConfig(&PriceConfig{}, "b") // 加载主配置以及tag配置
 
-	// consul配置
+	// consul配置 可把配置放入consul的kv中尝试读取
 	//config.FocusConsulConfig(&UserConfig{})
 	//config.FocusConsulConfig(&PriceConfig{})
 	//config.SetConsul("localhost:8500")
