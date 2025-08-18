@@ -154,6 +154,8 @@ potato.Instance().BroadcastEvent(&nice.EventHello{SayHello: "niceman"}, false) /
 * calculator 用于计算的服务 server节点通过rpc调用calculator节点进行计算
 * client 客户端
 * nicepb 使用protobuf所需的消息文件
+* pairpb 作为消息对注册的protobuf
+* config 配置文件读取示例
 
 ---
 
@@ -189,6 +191,13 @@ potato.Instance().BroadcastEvent(&nice.EventHello{SayHello: "niceman"}, false) /
     - 日志输出用到了大名鼎鼎的zap，持久化日志通过lumberjack实现。
     - 不进行任何设置的话 默认输出到标准输出。通过InitLogger进行设置，可实现自定义日志级别，保存文件夹，保存天数等等。
     - webhook用于服务器报错通知到飞书，钉钉等。
+
+  * config
+    - 配置读取 详细可以参考[config](https://github.com/murang/potato/tree/master/config/README.md)
+    - 配置文件格式当前只支持json。支持读取本地文件和从consul中读取配置。
+    - 可加载同类型但是不同数据的配置，同类型配置通过tag区分，主要解决问题就是AB测试的时候使用不同配置
+    - 加载本地配置的时候需要传入tag用于检索配置文件
+    - consul配置则不用传入tag 通过关注主配置的key进行检索 模块会自动加载tag配置 通过consul的kv监听 模块支持动态更新和添加配置
 
 ### tips
 - 数据库，缓存等等模块通常需要根据具体需求来进行选择，并且有很多优秀的库可供选择，这里就不做设计了。
