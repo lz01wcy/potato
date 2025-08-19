@@ -109,13 +109,13 @@ func (a *Application) Start(f func() bool) {
 		os.Exit(1)
 	}()
 
-	// 网络
-	if a.netManager != nil {
-		a.netManager.Start()
-	}
 	// rpc
 	if a.rpcManager != nil {
 		a.cluster = a.rpcManager.Start(a.actorSystem)
+	}
+	// 网络
+	if a.netManager != nil {
+		a.netManager.Start()
 	}
 
 	for mid, mod := range a.id2mod {

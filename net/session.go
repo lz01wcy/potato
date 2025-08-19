@@ -193,6 +193,7 @@ func (s *Session) readMessageBytes() (msg []byte, err error) {
 
 // 发送循环
 func (s *Session) writeLoop() {
+loop:
 	for !s.IsClosed() {
 		var msgBytes []byte
 		select {
@@ -200,12 +201,12 @@ func (s *Session) writeLoop() {
 			msgBytes = raw
 		case msg := <-s.sendChan:
 			if msg == nil { //在读loop的时候出错 这边需要break关闭
-				break
+				break loop
 			}
 			data, err := s.manager.codec.Encode(msg)
 			if err != nil {
 				log.Sugar.Errorf("encode msg error, sesid: %d, err: %s", s.ID(), err)
-				break
+				break loop
 			}
 			msgBytes = data
 		}
@@ -217,13 +218,7 @@ func (s *Session) writeLoop() {
 			break
 		}
 	}
-
-	// 完整关闭
-	conn := s.Conn()
-	if conn != nil {
-		_ = conn.Close()
-	}
-
+	
 	// 通知完成
 	s.exitSync.Done()
 }
