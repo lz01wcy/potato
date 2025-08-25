@@ -27,8 +27,8 @@ go get github.com/murang/potato
 ```
 
 ---
-
-创建一个application实例 把实现了IModule接口的模块注册到application 开始运行application后 模块的生命周期就开始了
+ 
+引用potato会初始化一个Application单例 把实现了IModule接口的模块注册到potato 执行Run之后模块的生命周期就开始了
 ```go
 package main
 
