@@ -24,7 +24,7 @@ func (m MyMsgHandler) OnSessionClose(session *net.Session) {
 
 func (m MyMsgHandler) OnMsg(session *net.Session, msg any) {
 	log.Sugar.Infof("handler got msg: %v", msg)
-	handler, ok := msgDispatcher[reflect.TypeOf(msg).Elem()]
+	handler, ok := msgDispatcher[reflect.TypeOf(msg)]
 	if !ok {
 		log.Sugar.Errorf("handler got unknown msg: %v", msg)
 		return
