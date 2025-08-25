@@ -10,7 +10,6 @@ import (
 	"github.com/murang/potato/rpc"
 	"os"
 	"os/signal"
-	"reflect"
 	"runtime"
 	"sync"
 	"syscall"
@@ -22,74 +21,75 @@ var (
 )
 
 type Application struct {
-	exit        bool
-	id2mod      map[ModuleID]IModule // ModuleID -> IModule
-	id2pid      sync.Map             // ModuleID -> actor PID
-	cancels     []scheduler.CancelFunc
-	actorSystem *actor.ActorSystem
-	cluster     *cluster.Cluster
-	netManager  *net.Manager
-	rpcManager  *rpc.Manager
+	exit     bool
+	name2mod map[string]IModule // ModuleID -> IModule
+	name2pid sync.Map           // ModuleID -> actor PID
+	cancels  []scheduler.CancelFunc
+
+	ActorSystem *actor.ActorSystem
+	Cluster     *cluster.Cluster
+	NetManager  *net.Manager
+	RpcManager  *rpc.Manager
 }
 
 func NewApplication() *Application {
 	a := &Application{
-		actorSystem: actor.NewActorSystem(actor.WithLoggerFactory(log.ColoredConsoleLogging)),
-		id2mod:      map[ModuleID]IModule{},
-		id2pid:      sync.Map{},
+		ActorSystem: actor.NewActorSystem(actor.WithLoggerFactory(log.ColoredConsoleLogging)),
+		name2mod:    map[string]IModule{},
+		name2pid:    sync.Map{},
 	}
 	return a
 }
 
 func (a *Application) GetActorSystem() *actor.ActorSystem {
-	return a.actorSystem
+	return a.ActorSystem
 }
 func (a *Application) GetCluster() *cluster.Cluster {
-	return a.cluster
+	return a.Cluster
 }
 func (a *Application) GetNetManager() *net.Manager {
-	return a.netManager
+	return a.NetManager
 }
 func (a *Application) GetRpcManager() *rpc.Manager {
-	return a.rpcManager
+	return a.RpcManager
 }
 
 func (a *Application) BroadcastEvent(event any, includeSelf bool) {
-	if a.cluster == nil {
+	if a.Cluster == nil {
 		return
 	}
-	a.cluster.MemberList.BroadcastEvent(event, includeSelf)
+	a.Cluster.MemberList.BroadcastEvent(event, includeSelf)
 }
 
 func (a *Application) SetNetConfig(config *net.Config) {
-	a.netManager = net.NewManagerWithConfig(config)
+	a.NetManager = net.NewManagerWithConfig(config)
 }
 
 func (a *Application) SetRpcConfig(config *rpc.Config) {
-	a.rpcManager = rpc.NewManagerWithConfig(config)
+	a.RpcManager = rpc.NewManagerWithConfig(config)
 }
 
-func (a *Application) RegisterModule(modId ModuleID, mod IModule) {
-	if _, ok := a.id2mod[modId]; ok {
-		panic("RegisterModule err, repeated module id: " + reflect.TypeOf(modId).Name())
+func (a *Application) RegisterModule(modName string, mod IModule) {
+	if _, ok := a.name2mod[modName]; ok {
+		panic("RegisterModule err, repeated module name: " + modName)
 	}
-	a.id2mod[modId] = mod
-	log.Logger.Info("module register : " + reflect.TypeOf(mod).Name())
+	a.name2mod[modName] = mod
+	log.Logger.Info("module register : " + modName)
 }
 
-func (a *Application) SendToModule(modId ModuleID, msg interface{}) {
-	if pid, ok := a.id2pid.Load(modId); ok {
-		a.actorSystem.Root.Send(pid.(*actor.PID), &ModuleOnMsg{Msg: msg})
+func (a *Application) SendToModule(modName string, msg interface{}) {
+	if pid, ok := a.name2pid.Load(modName); ok {
+		a.ActorSystem.Root.Send(pid.(*actor.PID), &ModuleOnMsg{Msg: msg})
 	} else {
-		log.Sugar.Warnf("module %s has not been registered", reflect.TypeOf(modId).Name())
+		log.Sugar.Warnf("module %s has not been registered", modName)
 	}
 }
 
-func (a *Application) RequestToModule(modId ModuleID, msg interface{}) (interface{}, error) {
-	if pid, ok := a.id2pid.Load(modId); ok {
-		return a.actorSystem.Root.RequestFuture(pid.(*actor.PID), &ModuleOnRequest{Request: msg}, time.Second).Result()
+func (a *Application) RequestToModule(modName string, msg interface{}) (interface{}, error) {
+	if pid, ok := a.name2pid.Load(modName); ok {
+		return a.ActorSystem.Root.RequestFuture(pid.(*actor.PID), &ModuleOnRequest{Request: msg}, time.Second).Result()
 	} else {
-		log.Sugar.Warnf("module %s has not been registered", reflect.TypeOf(modId).Name())
+		log.Sugar.Warnf("module %s has not been registered", modName)
 		return nil, errModuleNotRegistered
 	}
 }
@@ -109,22 +109,22 @@ func (a *Application) Start(f func() bool) {
 		os.Exit(1)
 	}()
 
-	// rpc
-	if a.rpcManager != nil {
-		a.cluster = a.rpcManager.Start(a.actorSystem)
+	// rpc StartMember 需要先执行 否则net中获取grain会出错
+	if a.RpcManager != nil {
+		a.Cluster = a.RpcManager.Start(a.ActorSystem)
 	}
 	// 网络
-	if a.netManager != nil {
-		a.netManager.Start()
+	if a.NetManager != nil {
+		a.NetManager.Start()
 	}
 
-	for mid, mod := range a.id2mod {
+	for mid, mod := range a.name2mod {
 		props := actor.PropsFromProducer(func() actor.Actor {
 			return &moduleActor{module: mod.(IModule)}
 		})
-		pid := a.actorSystem.Root.Spawn(props)
-		a.id2pid.Store(mid, pid)
-		log.Logger.Info("static module init: " + reflect.TypeOf(mod).String())
+		pid := a.ActorSystem.Root.Spawn(props)
+		a.name2pid.Store(mid, pid)
+		log.Logger.Info("module init : " + mid)
 	}
 
 	if f != nil {
@@ -137,11 +137,11 @@ func (a *Application) Start(f func() bool) {
 }
 
 func (a *Application) Run() {
-	sch := scheduler.NewTimerScheduler(a.actorSystem.Root)
-	for mid, mod := range a.id2mod {
+	sch := scheduler.NewTimerScheduler(a.ActorSystem.Root)
+	for mid, mod := range a.name2mod {
 		if mod.FPS() > 0 {
 			interval := time.Duration(1000/mod.FPS()) * time.Millisecond
-			pid, _ := a.id2pid.Load(mid)
+			pid, _ := a.name2pid.Load(mid)
 			a.cancels = append(a.cancels, sch.SendRepeatedly(interval, interval, pid.(*actor.PID), &ModuleUpdate{}))
 		}
 	}
@@ -155,19 +155,19 @@ func (a *Application) Run() {
 
 func (a *Application) End(f func()) {
 	// 网络
-	if a.netManager != nil {
-		a.netManager.OnDestroy()
+	if a.NetManager != nil {
+		a.NetManager.OnDestroy()
 	}
 	// rpc
-	if a.rpcManager != nil {
-		a.rpcManager.OnDestroy()
+	if a.RpcManager != nil {
+		a.RpcManager.OnDestroy()
 	}
 
 	for _, cancel := range a.cancels {
 		cancel()
 	}
-	a.id2pid.Range(func(key, value interface{}) bool {
-		a.actorSystem.Root.Stop(value.(*actor.PID))
+	a.name2pid.Range(func(key, value interface{}) bool {
+		a.ActorSystem.Root.Stop(value.(*actor.PID))
 		return true
 	})
 	if f != nil {

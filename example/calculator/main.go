@@ -8,8 +8,7 @@ import (
 )
 
 func main() {
-	app := potato.Instance()
-	app.SetRpcConfig(&rpc.Config{
+	potato.SetRpcConfig(&rpc.Config{
 		ClusterName: "nice",
 		Consul:      "0.0.0.0:8500",
 		ServiceKind: []*cluster.Kind{nice.NewCalculatorKind(func() nice.Calculator {
@@ -18,7 +17,7 @@ func main() {
 		EventHandler: OnEvent,
 	})
 
-	app.Start(nil) // 初始化app 入参为启动函数 在初始化所有组件后执行
-	app.Run()      // 启动app 所有组件开始tick 主线程阻塞
-	app.End(nil)   // 主线程开始退出 所有组件销毁后执行入参函数
+	potato.Start(nil) // 初始化app 入参为启动函数 在初始化所有组件后执行
+	potato.Run()      // 启动app 所有组件开始tick 主线程阻塞
+	potato.End(nil)   // 主线程开始退出 所有组件销毁后执行入参函数
 }

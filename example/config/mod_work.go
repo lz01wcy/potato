@@ -9,6 +9,10 @@ import (
 type WorkModule struct {
 }
 
+func (w WorkModule) Name() string {
+	return "work"
+}
+
 func (w WorkModule) FPS() uint {
 	return 1
 }

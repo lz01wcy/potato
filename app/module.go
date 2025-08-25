@@ -1,8 +1,7 @@
 package app
 
-type ModuleID any
-
 type IModule interface {
+	Name() string                          // 模块名称
 	FPS() uint                             // 模块帧率 0的话就是不tick
 	OnStart()                              // 模块启动
 	OnUpdate()                             // 模块tick

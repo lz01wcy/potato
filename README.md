@@ -37,26 +37,29 @@ import (
 )
 
 func main() {
-	app := potato.Instance()
+  // 添加模块 模块需要实现IModule 可以把组件理解为unity的组件 有自己的生命周期
+  // potato可以注册多个模块 每个模块有自己的帧率 帧率设置为0的话就是不tick
+  potato.RegisterModule(&NiceModule{})
 
-	// 添加模块 模块需要实现IModule 可以把组件理解为unity的组件 有自己的生命周期
-	// 一个app可以注册多个模块 每个模块有自己的帧率 帧率设置为0的话就是不tick
-	app.RegisterModule(NiceModuleId, &NiceModule{})
-
-	// 初始化app 入参为启动函数 在初始化所有组件后执行
-	app.Start(func() bool { 
-		log.Logger.Info("all module started, server start")
-		return true
-	})
-	app.Run() // 开始update 所有组件开始tick 主线程阻塞
-	app.End(func() {  // 主线程开始退出 所有组件销毁后执行入参函数
-		log.Logger.Info("all module stopped, server stop")
-	})
+  // 初始化app 入参为启动函数 在初始化所有组件后执行
+  potato.Start(func() bool { // 初始化app 入参为启动函数 在初始化所有组件后执行
+    log.Logger.Info("all module started, server start")
+    return true
+  })
+  potato.Run()        // 开始update 所有组件开始tick 主线程阻塞
+  potato.End(func() { // 主线程开始退出 所有组件销毁后执行入参函数
+    log.Logger.Info("all module stopped, server stop")
+  })
 }
 ```
 模块需要实现IModule接口
 ```go
 type NiceModule struct {}
+
+// 模块名称
+func (n *NiceModule) Name() string {
+    return "nice"
+}
 
 func (n *NiceModule) FPS() uint {
 	return 60 // 帧率 设置60的话 模块每秒OnUpdate会执行60次 设置为0的话就是不tick
@@ -87,7 +90,7 @@ func (n *NiceModule) OnRequest(msg interface{}) interface{} {
 
 设置网络监听：
 ```go
-app.SetNetConfig(&net.Config{
+potato.SetNetConfig(&net.Config{
 		SessionStartId: 0,
 		ConnectLimit:   1000,
 		Timeout:        30,
@@ -97,7 +100,7 @@ app.SetNetConfig(&net.Config{
 // 网络监听器 支持tcp/kcp/ws
 ln, _ := net.NewListener("tcp", ":10086")
 // 添加网络监听器 可支持同时接收多个监听器消息 统一由MsgHandler处理
-app.GetNetManager().AddListener(ln)
+potato.GetNetManager().AddListener(ln)
 ```
 消息处理器实现IMsgHandler
 ```go
@@ -118,7 +121,7 @@ func (m MyMsgHandler) OnMsg(session *net.Session, msg any) {
 
 设置rpc服务：  
 ```go
-app.SetRpcConfig(&rpc.Config{
+potato.SetRpcConfig(&rpc.Config{
     ClusterName: "nice",    // 集群名称 同一集群中服务需要设置想用集群名称 才能正常组网
     Consul:      "0.0.0.0:8500", // consul地址 用于服务发现
     ServiceKind: []*cluster.Kind{nice.NewServiceKind(func() nice.Service { // 通过proto-actor的grain生成rpc相关代码生成的rpc服务 如果本服务没有供其他服务调用的rpc服务 可以不设置
@@ -140,12 +143,12 @@ func (c ServiceImpl) DoSth(req *pb.Req, ctx cluster.GrainContext) (*pb.Res, erro
 调用rpc服务
 ```go
 // 自定义id用于在service方生成虚拟actor 在service节点没有变动的情况下 同一个identity会始终路由到同一个service
-grain := nice.GetServicGrainClient(potato.Instance().GetCluster(), "MyIdentity")
+grain := nice.GetServicGrainClient(potato.GetCluster(), "MyIdentity")
 res, err := grain.DoSth(&pb.Req{A: 6, B: 6})
 ```
 发送集群订阅事件
 ```go
-potato.Instance().BroadcastEvent(&nice.EventHello{SayHello: "niceman"}, false) // 第二个参数为广播是否包含当前节点
+potato.BroadcastEvent(&nice.EventHello{SayHello: "niceman"}, false) // 第二个参数为广播是否包含当前节点
 ```
 ---
 
