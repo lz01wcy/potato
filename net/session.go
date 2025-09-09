@@ -107,16 +107,29 @@ func (s *Session) Start() {
 		// 等待2个任务结束
 		s.exitSync.Wait()
 		s.Close()
-		s.manager.sessionEventChan <- &SessionEvent{
-			Session: s,
-			Type:    SessionClose,
+		if s.manager.msgHandler != nil && s.manager.msgHandler.IsMsgInRoutine() {
+			s.manager.sessionMap.Delete(s.ID())
+			atomic.AddInt32(&s.manager.sessionCount, -1)
+			log.Sugar.Infof("session close: %d", s.ID())
+			s.manager.msgHandler.OnSessionClose(s)
+		} else {
+			s.manager.sessionEventChan <- &SessionEvent{
+				Session: s,
+				Type:    SessionClose,
+			}
 		}
 	}()
 
-	// 先处理这个 防止event handler不在同一个进程里面 出现的并发问题
-	s.manager.sessionEventChan <- &SessionEvent{
-		Session: s,
-		Type:    SessionOpen,
+	if s.manager.msgHandler != nil && s.manager.msgHandler.IsMsgInRoutine() {
+		s.manager.sessionMap.Store(s.ID(), s)
+		atomic.AddInt32(&s.manager.sessionCount, 1)
+		log.Sugar.Infof("session open: %d", s.ID())
+		s.manager.msgHandler.OnSessionOpen(s)
+	} else {
+		s.manager.sessionEventChan <- &SessionEvent{
+			Session: s,
+			Type:    SessionOpen,
+		}
 	}
 
 	// 启动并发接收goroutine
@@ -151,17 +164,21 @@ func (s *Session) readLoop() {
 			break
 		}
 
-		ev := &SessionEvent{
-			Session: s,
-			Type:    SessionMsg,
-		}
-		ev.Msg, err = s.manager.codec.Decode(msgBytes)
+		msg, err := s.manager.codec.Decode(msgBytes)
 		if err != nil {
 			log.Sugar.Errorf("decode msg error, sesid: %d, err: %s", s.ID(), err)
 			s.sendChan <- nil //给写队列传空 用于关闭写队列
 			break
 		}
-		s.manager.sessionEventChan <- ev
+		if s.manager.msgHandler != nil && s.manager.msgHandler.IsMsgInRoutine() {
+			s.manager.msgHandler.OnMsg(s, msg)
+		} else {
+			s.manager.sessionEventChan <- &SessionEvent{
+				Session: s,
+				Type:    SessionMsg,
+				Msg:     msg,
+			}
+		}
 	}
 
 	// 通知完成
@@ -218,7 +235,7 @@ loop:
 			break
 		}
 	}
-	
+
 	// 通知完成
 	s.exitSync.Done()
 }
