@@ -104,13 +104,21 @@ potato.GetNetManager().AddListener(ln)
 ```
 消息处理器实现IMsgHandler
 ```go
-func (m MyMsgHandler) OnSessionOpen(session *net.Session) {
+// 消息是否在协程中处理 如果设置为true 消息不会经过NetManager的消息channel依次处理 
+// 而是运行在goroutine中的每个session有事件后在session所在goroutine立即处理 需要注意并发安全
+func (m *MyMsgHandler) IsMsgInRoutine() bool {
+    return false
+}
+// 新的session生成
+func (m *MyMsgHandler) OnSessionOpen(session *net.Session) {
 	log.Sugar.Info("handler got open:", session.ID())
 }
-func (m MyMsgHandler) OnSessionClose(session *net.Session) {
+// session关闭
+func (m *MyMsgHandler) OnSessionClose(session *net.Session) {
 	log.Sugar.Info("handler got close:", session.ID())
 }
-func (m MyMsgHandler) OnMsg(session *net.Session, msg any) {
+// 收到消息
+func (m *MyMsgHandler) OnMsg(session *net.Session, msg any) {
 	log.Sugar.Infof("handler got msg: %v", msg)
 }
 ```
@@ -183,6 +191,7 @@ potato.BroadcastEvent(&nice.EventHello{SayHello: "niceman"}, false) // 第二个
     - protobuf消息注册模块，管理protobuf消息的注册
     - 代码生成插件帮助消息代码生成时自动注册到消息列表中，无需手动注册 详情见 [protoc-gen-autoregister](https://github.com/murang/potato/tree/main/pb/README.md)
     - 支持消息和ID一对一映射，以及消息ID与消息对的映射 Codec也做了相应支持
+    - 添加了vtproto对默认proto进行增强 据说性能提升一倍以上 还有gc优化 详情见 [vtprotobuf](https://github.com/planetscale/vtprotobuf)
 
 * rpc
     - rpc模块，rpc管理器的生命周期管理
