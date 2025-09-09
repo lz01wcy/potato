@@ -8,4 +8,7 @@ cd "$SCRIPT_DIR" || exit
 
 # 生成代码
 protoc -I. --go_out=. --go-grain_out=. rpc.proto
-protoc -I. --go_out=. --autoregister_out=. nice.proto
+protoc -I. --go_out=. \
+  --go-vtproto_out=. \
+  --go-vtproto_opt=features=marshal+unmarshal+size \
+  --autoregister_out=. nice.proto

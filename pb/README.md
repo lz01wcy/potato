@@ -1,8 +1,9 @@
 ## pb消息自动注册插件
 
 既然已经到了这里， 相信你已经学会了使用protobuf。
-这个插件的作用很简单， 就是自动把客户端和服务器之间通信用到的消息注册到对应的消息ID上。
-在codec中，通过id和消息类型的对应关系，可以很方便地进行消息的解析和编码。
+这个插件有两个部分：
+其一就是自动把客户端和服务器之间通信用到的消息注册到对应的消息ID上，在codec中，通过id和消息类型的对应关系，可以很方便地进行消息的解析和编码。
+其二的vt模块是使用了vtproto强化pb序列化的性能 据说能提升一倍性能 gc也有所优化 这里通过代码生成自动注册到一个消息map中，用于序列化。
 
 ### 使用方法
 
@@ -15,6 +16,11 @@ go install github.com/murang/potato/pb/protoc-gen-autoregister@latest
 或者用于一个消息id对应一个消息对的格式
 ```bash
 go install github.com/murang/potato/pb/protoc-gen-autoregisterpair@latest
+```
+
+还需要安装vtproto插件 详情见[vtproto](https://github.com/planetscale/vtprotobuf)
+```bash
+go install github.com/planetscale/vtprotobuf/cmd/protoc-gen-go-vtproto@latest
 ```
 
 2. 编写proto文件
@@ -64,11 +70,19 @@ message S2C_Notify {
 
 3. 编译proto文件 在proto文件所在的目录下（或者其他目录，请自行调整命令参数）
 ```bash
-protoc --go_out=. --autoregister_out=. *.proto
+protoc --go_out=. \
+  --autoregister_out=. \
+  --go-vtproto_out=. \
+  --go-vtproto_opt=features=marshal+unmarshal+size \
+   *.proto
 ```
 或者生成消息对注册
 ```bash
-protoc --go_out=. --autoregisterpair_out=. *.proto
+protoc --go_out=. \
+  --autoregisterpair_out=. \
+  --go-vtproto_out=. \
+  --go-vtproto_opt=features=marshal+unmarshal+size \
+  *.proto
 ```
 
 4. 检查生成的注册文件 `your_prroto_autoregister.go`
@@ -77,6 +91,7 @@ current_dir
 ├── your_prroto.proto
 └── your_pack
     ├── your_prroto.pb.go
+    ├── your_prroto_vtproto.pb.go
     └── your_prroto_autoregister.go
 ```
 ```go
@@ -85,13 +100,29 @@ package your_pack
 
 import (
 	"github.com/murang/potato/pb"
+	"github.com/murang/potato/pb/vt"
 	"reflect"
 )
 
 func init() {
 	pb.RegisterMsg(uint32(MsgId_c2s_Heartbeat), reflect.TypeOf(C2S_Heartbeat{}))
 	pb.RegisterMsg(uint32(MsgId_s2c_Heartbeat), reflect.TypeOf(S2C_Heartbeat{}))
+	vt.Register[*C2S_Heartbeat]()
+	vt.Register[*S2C_Heartbeat]()
 }
-
 ```
+
+5. 在项目中使用vtproto的序列化 可以使用vt替代proto 如果消息没有没注册到vt，会fallback到proto的序列化
+```go
+// 反序列化
+msg := &C2S_Heartbeat{}
+err = vt.Unmarshal(dataBytes, msg)
+
+// 序列化
+msg := &C2S_Heartbeat{
+		SayHi: "Hi",
+}
+dataBytes, err := vt.Marshal(msg)
+```
+
 如果是生成代码有编译错误，请检查是否按照上述格式编写proto文件，检查是否缺少ID对应消息体。

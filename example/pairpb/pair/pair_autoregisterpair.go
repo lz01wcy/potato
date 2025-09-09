@@ -3,10 +3,14 @@ package pair
 
 import (
 	"github.com/murang/potato/pb"
+	"github.com/murang/potato/pb/vt"
 	"reflect"
 )
 
 func init() {
 	pb.RegisterMsgPair(uint32(MsgId_Hello), reflect.TypeOf(&C2S_Hello{}), reflect.TypeOf(&S2C_Hello{}))
 	pb.RegisterMsgPair(uint32(MsgId_Notify), nil, reflect.TypeOf(&S2C_Notify{}))
+	vt.Register[*C2S_Hello]()
+	vt.Register[*S2C_Hello]()
+	vt.Register[*S2C_Notify]()
 }

@@ -1,12 +1,13 @@
 module github.com/murang/potato
 
-go 1.24.4
+go 1.25.1
 
 require (
 	github.com/asynkron/protoactor-go v0.0.0-20240822202345-3c0e61ca19c9
 	github.com/gorilla/websocket v1.5.3
 	github.com/hashicorp/consul/api v1.26.1
 	github.com/lmittmann/tint v1.0.3
+	github.com/planetscale/vtprotobuf v0.6.0
 	github.com/samber/slog-zap/v2 v2.6.2
 	github.com/xtaci/kcp-go v4.3.4+incompatible
 	go.uber.org/zap v1.27.0

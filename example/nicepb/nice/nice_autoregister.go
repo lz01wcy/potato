@@ -3,10 +3,13 @@ package nice
 
 import (
 	"github.com/murang/potato/pb"
+	"github.com/murang/potato/pb/vt"
 	"reflect"
 )
 
 func init() {
 	pb.RegisterMsg(uint32(MsgId_c2s_Hello), reflect.TypeOf(&C2S_Hello{}))
 	pb.RegisterMsg(uint32(MsgId_s2c_Hello), reflect.TypeOf(&S2C_Hello{}))
+	vt.Register[*C2S_Hello]()
+	vt.Register[*S2C_Hello]()
 }
