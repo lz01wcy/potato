@@ -102,6 +102,9 @@ ln, _ := net.NewListener("tcp", ":10086")
 // 添加网络监听器 可支持同时接收多个监听器消息 统一由MsgHandler处理
 potato.GetNetManager().AddListener(ln)
 ```
+
+⚠️⚠️⚠️ 网络消息按照 `[消息体长度(4字节)] + [消息体]` 为一个数据包来发送 这个4字节的长度默认`大端序` ⚠️⚠️⚠️
+
 消息处理器实现IMsgHandler
 ```go
 // 消息是否在协程中处理 如果设置为true 消息不会经过NetManager的消息channel依次处理 
@@ -167,7 +170,7 @@ potato.BroadcastEvent(&nice.EventHello{SayHello: "niceman"}, false) // 第二个
 * nicepb 使用protobuf所需的消息文件
 * pairpb 作为消息对注册的protobuf
 * config 配置文件读取示例
-
+* unity_network Unity的网络实现与示例
 ---
 
 ### 框架结构

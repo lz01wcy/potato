@@ -1,10 +1,11 @@
 package main
 
 import (
+	"reflect"
+
 	"github.com/murang/potato/log"
 	"github.com/murang/potato/net"
 	"google.golang.org/protobuf/proto"
-	"reflect"
 )
 
 type Agent struct {
@@ -14,15 +15,19 @@ type Agent struct {
 type MyMsgHandler struct {
 }
 
-func (m MyMsgHandler) OnSessionOpen(session *net.Session) {
+func (m *MyMsgHandler) IsMsgInRoutine() bool {
+	return false
+}
+
+func (m *MyMsgHandler) OnSessionOpen(session *net.Session) {
 	log.Sugar.Info("handler got open:", session.ID())
 }
 
-func (m MyMsgHandler) OnSessionClose(session *net.Session) {
+func (m *MyMsgHandler) OnSessionClose(session *net.Session) {
 	log.Sugar.Info("handler got close:", session.ID())
 }
 
-func (m MyMsgHandler) OnMsg(session *net.Session, msg any) {
+func (m *MyMsgHandler) OnMsg(session *net.Session, msg any) {
 	log.Sugar.Infof("handler got msg: %v", msg)
 	handler, ok := msgDispatcher[reflect.TypeOf(msg)]
 	if !ok {
