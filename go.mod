@@ -7,7 +7,6 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/hashicorp/consul/api v1.26.1
 	github.com/lmittmann/tint v1.0.3
-	github.com/planetscale/vtprotobuf v0.6.0
 	github.com/samber/slog-zap/v2 v2.6.2
 	github.com/xtaci/kcp-go v4.3.4+incompatible
 	go.uber.org/zap v1.27.0

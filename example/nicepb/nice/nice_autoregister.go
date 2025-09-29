@@ -10,6 +10,8 @@ import (
 func init() {
 	pb.RegisterMsg(uint32(MsgId_c2s_Hello), reflect.TypeOf(&C2S_Hello{}))
 	pb.RegisterMsg(uint32(MsgId_s2c_Hello), reflect.TypeOf(&S2C_Hello{}))
+	pb.RegisterMsg(uint32(MsgId_c2s_Complex), reflect.TypeOf(&C2S_Complex{}))
 	vt.Register[*C2S_Hello]()
 	vt.Register[*S2C_Hello]()
+	vt.Register[*C2S_Complex]()
 }

@@ -65,6 +65,10 @@ func Marshal(msg proto.Message) ([]byte, error) {
 
 // 统一 Unmarshal
 func Unmarshal(data []byte, msg proto.Message) error {
+	// vt和proto不同 不会使用默认值重置对象 如果遇到有脏值的对象就会出问题 所以这里手动重置一下
+	if r, ok := msg.(interface{ Reset() }); ok {
+		r.Reset()
+	}
 	if v, ok := msg.(VTProtoMessage); ok {
 		typeID := typeIDOf(v)
 

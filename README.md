@@ -194,7 +194,7 @@ potato.BroadcastEvent(&nice.EventHello{SayHello: "niceman"}, false) // 第二个
     - protobuf消息注册模块，管理protobuf消息的注册
     - 代码生成插件帮助消息代码生成时自动注册到消息列表中，无需手动注册 详情见 [protoc-gen-autoregister](https://github.com/murang/potato/tree/main/pb/README.md)
     - 支持消息和ID一对一映射，以及消息ID与消息对的映射 Codec也做了相应支持
-    - 添加了vtproto对默认proto进行增强 据说性能提升一倍以上 还有gc优化 详情见 [vtprotobuf](https://github.com/planetscale/vtprotobuf)
+    - 添加了vtproto对默认proto进行增强 基准测试性能可以提升将近一倍 还有gc优化 详情见 [vtprotobuf](https://github.com/planetscale/vtprotobuf)
 
 * rpc
     - rpc模块，rpc管理器的生命周期管理

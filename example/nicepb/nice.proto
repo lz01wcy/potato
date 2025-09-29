@@ -6,6 +6,7 @@ enum MsgId {
   Unknown = 0;
   c2s_Hello = 100;
   s2c_Hello = 101;
+  c2s_Complex = 102;
 }
 
 message C2S_Hello {
@@ -13,4 +14,92 @@ message C2S_Hello {
 }
 message S2C_Hello {
   string sayHi = 1;
+}
+
+message C2S_Complex {
+    PastedObject pastedObject = 1;
+}
+
+message PastedObject {
+  string company = 1;
+  uint32 founded = 2;
+  bool public = 3;
+  StockInfo stockInfo = 4;
+  repeated Departments departments = 5;
+  repeated Locations locations = 6;
+  Financials financials = 7;
+  Metadata metadata = 8;
+}
+message StockInfo {
+  string symbol = 1;
+  uint32 price = 2;
+  string currency = 3;
+  string marketCap = 4;
+  string exchange = 5;
+  repeated HistoricalData historicalData = 6;
+}
+message HistoricalData {
+  string date = 1;
+  uint32 open = 2;
+  uint32 high = 3;
+  uint32 low = 4;
+  uint32 close = 5;
+}
+message Departments {
+  string name = 1;
+  Head head = 2;
+  repeated Teams teams = 3;
+}
+message Head {
+  string firstName = 1;
+  string lastName = 2;
+  string employeeId = 3;
+  uint32 age = 4;
+  repeated string specialties = 5;
+}
+message Teams {
+  string teamName = 1;
+  uint32 members = 2;
+  repeated string techStack = 3;
+  repeated Projects projects = 4;
+}
+message Projects {
+  string name = 1;
+  string status = 2;
+  uint32 budget = 3;
+  Timeline timeline = 4;
+}
+message Timeline {
+  string start = 1;
+  string end = 2;
+}
+message Locations {
+  string city = 1;
+  string country = 2;
+  uint32 employees = 3;
+  bool headquarters = 4;
+  Facilities facilities = 5;
+}
+message Facilities {
+  uint32 offices = 1;
+  uint32 labs = 2;
+  repeated string amenities = 3;
+}
+message Financials {
+  uint32 fiscalYear = 1;
+  uint32 revenue = 2;
+  uint32 expenses = 3;
+  uint32 profit = 4;
+  repeated Quarters quarters = 5;
+}
+message Quarters {
+  string quarter = 1;
+  uint32 revenue = 2;
+  uint32 profit = 3;
+}
+message Metadata {
+  string version = 1;
+  string created = 2;
+  string lastUpdated = 3;
+  string source = 4;
 }
